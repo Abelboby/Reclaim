@@ -1,65 +1,41 @@
 {
   "project_info": {
-    "project_number": "450381269261",
-    "project_id": "blockhack-bfa71",
-    "storage_bucket": "blockhack-bfa71.firebasestorage.app"
+    "project_number": "521059924112",
+    "project_id": "reclaim-deaddict",
+    "storage_bucket": "reclaim-deaddict.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:450381269261:android:260bf796d8d4ba1dfc0844",
+        "mobilesdk_app_id": "1:521059924112:android:f7cc89264f28cc8d830015",
         "android_client_info": {
-          "package_name": "com.example.app"
+          "package_name": "com.example.reclaim"
         }
       },
       "oauth_client": [
         {
-          "client_id": "450381269261-actg5lgidpn3gcnsufdq9f4foa1b78ah.apps.googleusercontent.com",
+          "client_id": "521059924112-tnboosglvu599hg6caski870e32f86ef.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.app",
-            "certificate_hash": "f91702c53cc300107b562dd021f5bc3b088c87a6"
-          }
-        },
-        {
-          "client_id": "450381269261-apmel7khojepm214tmdprcql5tdcuk60.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.app",
+            "package_name": "com.example.reclaim",
             "certificate_hash": "21162489da689bdfa6f6b11db79575407f29ae6c"
           }
         },
         {
-          "client_id": "450381269261-b3tnviipb3hm7s17t6vsh9789gfpron2.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.app",
-            "certificate_hash": "4afb42eeb229d0d102670d8a0a2cba3de9b1cd40"
-          }
-        },
-        {
-          "client_id": "450381269261-gme3u7294a31f090rfi05e6f7vpiu6ct.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.app",
-            "certificate_hash": "2fae7e916adee40b9aa743f98a208761f9991abc"
-          }
-        },
-        {
-          "client_id": "450381269261-s0565fgo22i8vm0a0qcj2t59vohp8ppj.apps.googleusercontent.com",
+          "client_id": "521059924112-hsphveu8pkff6grlveikfl07qbu627vk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDk6RcwL2-p9j92wkvDMuGI0B5kdB6aKCY"
+          "current_key": "AIzaSyAwbAQ6LseuGO1kQrbYTvHeHeQMT2IoMXc"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "450381269261-s0565fgo22i8vm0a0qcj2t59vohp8ppj.apps.googleusercontent.com",
+              "client_id": "521059924112-hsphveu8pkff6grlveikfl07qbu627vk.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

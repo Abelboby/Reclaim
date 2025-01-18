@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/asset_constants.dart';
+import '../../widgets/google_sign_in_button.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,12 +26,6 @@ class _SplashScreenState extends State<SplashScreen>
       curve: Curves.easeInOut,
     );
     _controller.repeat(reverse: true);
-    
-    // Add navigation after splash screen
-    Future.delayed(const Duration(seconds: 3), () {
-      // Navigate to next screen
-      // Will implement in next steps
-    });
   }
 
   @override
@@ -80,9 +75,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             const SizedBox(height: 40),
-            const CircularProgressIndicator(
-              color: Colors.white,
-            ),
+            const GoogleSignInButton(),
           ],
         ),
       ),
