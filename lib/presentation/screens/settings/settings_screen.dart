@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -13,84 +14,90 @@ class SettingsScreen extends StatelessWidget {
         title: const Text('Settings'),
         centerTitle: true,
       ),
-      body: ListView(
-        children: [
-          const _SectionHeader(title: 'Appearance'),
-          _buildThemeSwitcher(context),
-          const Divider(),
-          const _SectionHeader(title: 'Notifications'),
-          _buildSettingsTile(
-            context: context,
-            title: 'Push Notifications',
-            subtitle: 'Receive notifications about updates',
-            trailing: Switch(
-              value: true,
-              onChanged: (value) {
-                // Handle notification toggle
-              },
-              activeColor: AppColors.turquoise,
-            ),
-          ),
-          const Divider(),
-          const _SectionHeader(title: 'Privacy'),
-          _buildSettingsTile(
-            context: context,
-            title: 'Location Services',
-            subtitle: 'Allow app to access location',
-            trailing: Switch(
-              value: false,
-              onChanged: (value) {
-                // Handle location toggle
-              },
-              activeColor: AppColors.turquoise,
-            ),
-          ),
-          _buildSettingsTile(
-            context: context,
-            title: 'Data Usage',
-            subtitle: 'Manage how app uses data',
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // Navigate to data usage settings
-            },
-          ),
-          const Divider(),
-          const _SectionHeader(title: 'About'),
-          _buildSettingsTile(
-            context: context,
-            title: 'Version',
-            subtitle: '1.0.0',
-          ),
-          _buildSettingsTile(
-            context: context,
-            title: 'Terms of Service',
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // Navigate to terms of service
-            },
-          ),
-          _buildSettingsTile(
-            context: context,
-            title: 'Privacy Policy',
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // Navigate to privacy policy
-            },
-          ),
-        ],
+      body: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return ListView(
+            children: [
+              const _SectionHeader(title: 'Appearance'),
+              _buildThemeSwitcher(context, themeProvider),
+              const Divider(),
+              const _SectionHeader(title: 'Notifications'),
+              _buildSettingsTile(
+                context: context,
+                title: 'Push Notifications',
+                subtitle: 'Receive notifications about updates',
+                trailing: Switch(
+                  value: true,
+                  onChanged: (value) {
+                    // Handle notification toggle
+                  },
+                  activeColor: AppColors.turquoise,
+                ),
+              ),
+              const Divider(),
+              const _SectionHeader(title: 'Privacy'),
+              _buildSettingsTile(
+                context: context,
+                title: 'Location Services',
+                subtitle: 'Allow app to access location',
+                trailing: Switch(
+                  value: false,
+                  onChanged: (value) {
+                    // Handle location toggle
+                  },
+                  activeColor: AppColors.turquoise,
+                ),
+              ),
+              _buildSettingsTile(
+                context: context,
+                title: 'Data Usage',
+                subtitle: 'Manage how app uses data',
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  // Navigate to data usage settings
+                },
+              ),
+              const Divider(),
+              const _SectionHeader(title: 'About'),
+              _buildSettingsTile(
+                context: context,
+                title: 'Version',
+                subtitle: '1.0.0',
+              ),
+              _buildSettingsTile(
+                context: context,
+                title: 'Terms of Service',
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  // Navigate to terms of service
+                },
+              ),
+              _buildSettingsTile(
+                context: context,
+                title: 'Privacy Policy',
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  // Navigate to privacy policy
+                },
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildThemeSwitcher(BuildContext context) {
+  Widget _buildThemeSwitcher(BuildContext context, ThemeProvider themeProvider) {
     return _buildSettingsTile(
       context: context,
       title: 'Dark Mode',
       subtitle: 'Toggle dark/light theme',
       trailing: Switch(
-        value: Theme.of(context).brightness == Brightness.dark,
+        value: themeProvider.isDarkMode,
         onChanged: (value) {
-          // Handle theme toggle
+          themeProvider.setThemeMode(
+            value ? ThemeMode.dark : ThemeMode.light,
+          );
         },
         activeColor: AppColors.turquoise,
       ),
