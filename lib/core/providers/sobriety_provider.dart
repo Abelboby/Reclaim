@@ -2,65 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/sobriety_data.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 
 class SobrietyProvider extends ChangeNotifier {
   final SharedPreferences _prefs;
   SobrietyData? _data;
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
 
   SobrietyProvider(this._prefs) {
-    tz.initializeTimeZones();
     _loadData();
-    _initializeNotifications();
   }
 
   SobrietyData? get data => _data;
   
-  Future<void> _initializeNotifications() async {
-    const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initializationSettingsIOS = DarwinInitializationSettings();
-    const initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
-    
-    await _notifications.initialize(initializationSettings);
-    _scheduleDaily();
-  }
-
-  Future<void> _scheduleDaily() async {
-    await _notifications.zonedSchedule(
-      0,
-      'Daily Check-in Reminder',
-      'Maintain your streak! Log your sobriety progress for today.',
-      _nextInstance(),
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'sobriety_tracker',
-          'Sobriety Tracker',
-          channelDescription: 'Daily check-in reminders',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-  }
-
-  tz.TZDateTime _nextInstance() {
-    final now = tz.TZDateTime.now(tz.local);
-    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 20, 0);
-    if (scheduled.isBefore(now)) {
-      scheduled = scheduled.add(const Duration(days: 1));
-    }
-    return scheduled;
-  }
-
   void _loadData() {
     final jsonStr = _prefs.getString('sobriety_data');
     if (jsonStr != null) {
@@ -147,5 +99,15 @@ class SobrietyProvider extends ChangeNotifier {
     _data = SobrietyData.initial();
     _saveData();
     notifyListeners();
+  }
+
+  bool get hasCheckedInToday {
+    if (_data == null) return false;
+    final today = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
+    return _data!.checkIns.contains(today);
   }
 } 
