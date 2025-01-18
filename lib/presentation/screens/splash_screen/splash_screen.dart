@@ -49,24 +49,39 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             FadeTransition(
               opacity: _animation,
-              child: Image.asset(
-                AssetConstants.appLogo,
-                width: 150,
-                height: 150,
+              child: ColorFiltered(
+                colorFilter: const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
+                child: Image.asset(
+                  AssetConstants.appLogo,
+                  width: 200,
+                  height: 200,
+                ),
               ),
             ),
-            const SizedBox(height: 24),
-            const CircularProgressIndicator(
-              color: Colors.white,
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 24),            
             const Text(
-              'Substance Abuse Prevention',
+              'Recliam',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 24,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Reclaim Your Life, One Step at a Time',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 40),
+            const CircularProgressIndicator(
+              color: Colors.white,
             ),
           ],
         ),
