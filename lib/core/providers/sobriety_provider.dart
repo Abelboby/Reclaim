@@ -12,7 +12,7 @@ class SobrietyProvider extends ChangeNotifier {
   }
 
   SobrietyData? get data => _data;
-  
+
   void _loadData() {
     final jsonStr = _prefs.getString('sobriety_data');
     if (jsonStr != null) {
@@ -66,7 +66,6 @@ class SobrietyProvider extends ChangeNotifier {
     if (checkIns.isEmpty) return 0;
 
     checkIns.sort((a, b) => b.compareTo(a));
-    int streak = 1;
     final today = DateTime(
       DateTime.now().year,
       DateTime.now().month,
@@ -75,10 +74,22 @@ class SobrietyProvider extends ChangeNotifier {
 
     if (!checkIns.contains(today)) return 0;
 
-    for (int i = 1; i < checkIns.length; i++) {
-      final difference = checkIns[i - 1].difference(checkIns[i]).inDays;
+    int streak = 1;
+    DateTime lastDate = today;
+
+    for (int i = 0; i < checkIns.length; i++) {
+      final currentDate = DateTime(
+        checkIns[i].year,
+        checkIns[i].month,
+        checkIns[i].day,
+      );
+
+      if (currentDate.isAtSameMomentAs(lastDate)) continue;
+
+      final difference = lastDate.difference(currentDate).inDays;
       if (difference == 1) {
         streak++;
+        lastDate = currentDate;
       } else {
         break;
       }
@@ -110,4 +121,4 @@ class SobrietyProvider extends ChangeNotifier {
     );
     return _data!.checkIns.contains(today);
   }
-} 
+}

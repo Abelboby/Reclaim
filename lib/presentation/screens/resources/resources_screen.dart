@@ -3,29 +3,116 @@ import '../../../core/constants/app_colors.dart';
 import 'news_screen.dart';
 import 'mindfulness_screen.dart';
 import 'support_groups_screen.dart';
+import '../../../core/animations/app_animations.dart';
 
-class ResourcesScreen extends StatelessWidget {
+class ResourcesScreen extends StatefulWidget {
   const ResourcesScreen({super.key});
+
+  @override
+  State<ResourcesScreen> createState() => _ResourcesScreenState();
+}
+
+class _ResourcesScreenState extends State<ResourcesScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _animations = List.generate(
+      3,
+      (index) => CurvedAnimation(
+        parent: _controller,
+        curve: Interval(
+          index * 0.2,
+          0.6 + (index * 0.2),
+          curve: Curves.easeOutCubic,
+        ),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Resources'),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildResourceCategories(context),
-            const SizedBox(height: 24),
-            _buildFeaturedContent(context),
-          ],
-        ),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 180,
+            floating: false,
+            pinned: true,
+            stretch: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text(
+                'Resources',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.oceanBlue,
+                      AppColors.turquoise,
+                    ],
+                  ),
+                ),
+                child: AppAnimations.shimmer(
+                  child: Icon(
+                    Icons.library_books,
+                    size: 100,
+                    color: Colors.white.withOpacity(0.2),
+                  ),
+                ),
+              ),
+              stretchModes: const [
+                StretchMode.zoomBackground,
+                StretchMode.blurBackground,
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppAnimations.slideUp(
+                    animation: _animations[0],
+                    child: _buildHeader(),
+                  ),
+                  // const SizedBox(height: 6),
+                  AppAnimations.slideUp(
+                    animation: _animations[1],
+                    child: _buildResourceCategories(context),
+                  ),
+                  const SizedBox(height: 32),
+                  AppAnimations.slideUp(
+                    animation: _animations[2],
+                    child: _buildFeaturedContent(context),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -37,17 +124,19 @@ class ResourcesScreen extends StatelessWidget {
         Text(
           'Recovery Resources',
           style: TextStyle(
-            fontSize: 24,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
             color: AppColors.oceanBlue,
+            letterSpacing: -0.5,
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Explore tools and information to support your recovery journey',
           style: TextStyle(
             fontSize: 16,
-            color: Colors.grey,
+            color: Colors.grey.shade600,
+            height: 1.5,
           ),
         ),
       ],
@@ -62,9 +151,9 @@ class ResourcesScreen extends StatelessWidget {
         'color': AppColors.turquoise,
         'description': 'Meditation, breathing exercises, and stress management',
         'onTap': () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const MindfulnessScreen()),
-        ),
+              context,
+              AppAnimations.fadeScale(child: const MindfulnessScreen()),
+            ),
       },
       {
         'title': 'Recovery News',
@@ -72,9 +161,9 @@ class ResourcesScreen extends StatelessWidget {
         'color': AppColors.oceanBlue,
         'description': 'Latest articles and research on recovery',
         'onTap': () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const NewsScreen()),
-        ),
+              context,
+              AppAnimations.fadeScale(child: const NewsScreen()),
+            ),
       },
       {
         'title': 'Support Groups',
@@ -82,9 +171,9 @@ class ResourcesScreen extends StatelessWidget {
         'color': Colors.purple,
         'description': 'Find local and online support communities',
         'onTap': () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SupportGroupsScreen()),
-        ),
+              context,
+              AppAnimations.fadeScale(child: const SupportGroupsScreen()),
+            ),
       },
       {
         'title': 'Emergency Help',
@@ -92,7 +181,6 @@ class ResourcesScreen extends StatelessWidget {
         'color': Colors.red,
         'description': '24/7 crisis support and hotlines',
         'onTap': () {
-          // Show emergency contacts dialog
           showDialog(
             context: context,
             builder: (context) => _buildEmergencyDialog(context),
@@ -133,55 +221,59 @@ class ResourcesScreen extends StatelessWidget {
     required String description,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(15),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                color.withOpacity(0.8),
-                color,
+    return Hero(
+      tag: title,
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: color.withOpacity(0.1),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 32,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 40,
-                color: Colors.white,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                description,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 12,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
           ),
         ),
       ),
@@ -196,32 +288,58 @@ class ResourcesScreen extends StatelessWidget {
           'Featured Content',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
+                letterSpacing: -0.5,
               ),
         ),
         const SizedBox(height: 16),
         Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.turquoise.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.tips_and_updates,
-                color: AppColors.turquoise,
+          elevation: 8,
+          shadowColor: AppColors.turquoise.withOpacity(0.2),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white,
+                  AppColors.turquoise.withOpacity(0.1),
+                ],
               ),
             ),
-            title: const Text(
-              'Daily Recovery Tip',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: const Text(
-              'Practice mindfulness for 5 minutes today',
-              style: TextStyle(color: Colors.grey),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(20),
+              leading: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.turquoise.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.tips_and_updates,
+                  color: AppColors.turquoise,
+                  size: 28,
+                ),
+              ),
+              title: const Text(
+                'Daily Recovery Tip',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Practice mindfulness for 5 minutes today',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    height: 1.4,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -302,4 +420,4 @@ class ResourcesScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

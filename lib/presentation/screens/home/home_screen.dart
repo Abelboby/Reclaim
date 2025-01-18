@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../../core/providers/sobriety_provider.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/animations/app_animations.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +15,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final List<Animation<double>> _animations;
 
@@ -60,7 +63,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             flexibleSpace: FlexibleSpaceBar(
               title: Consumer<AuthProvider>(
                 builder: (context, authProvider, _) {
-                  final userName = authProvider.user?.displayName?.split(' ')[0] ?? 'User';
+                  final userName =
+                      authProvider.user?.displayName?.split(' ')[0] ?? 'User';
                   return Text(
                     'Welcome back, $userName',
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -157,10 +161,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     children: [
                       Text(
                         'Current Streak',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppColors.oceanBlue,
-                              fontWeight: FontWeight.w500,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: AppColors.oceanBlue,
+                                  fontWeight: FontWeight.w500,
+                                ),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -171,7 +176,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             builder: (context, value, child) {
                               return Text(
                                 '$value',
-                                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .displaySmall
+                                    ?.copyWith(
                                       color: AppColors.oceanBlue,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -181,7 +189,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           const SizedBox(width: 4),
                           Text(
                             'days',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
                                   color: AppColors.oceanBlue.withOpacity(0.7),
                                 ),
                           ),
@@ -406,59 +417,85 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            TweenAnimationBuilder<double>(
-              duration: const Duration(milliseconds: 500),
-              tween: Tween(begin: 0.0, end: 1.0),
-              builder: (context, value, child) {
-                return Transform.scale(
-                  scale: 0.5 + (value * 0.5),
-                  child: child,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            try {
+              if (!context.mounted) return;
+
+              final phoneNumber = 'tel:18006624357';
+              final uri = Uri.parse(phoneNumber);
+              await launchUrl(
+                uri,
+                mode: LaunchMode.platformDefault,
+              );
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error: ${e.toString()}'),
+                  ),
                 );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade100,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.phone,
-                  color: Colors.red.shade700,
-                  size: 24,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Need immediate help?',
-                    style: TextStyle(
+              }
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 500),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.5 + (value * 0.5),
+                      child: child,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.phone,
                       color: Colors.red.shade700,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Call 1-800-662-4357',
-                    style: TextStyle(
-                      color: Colors.red.shade700,
-                      fontSize: 14,
-                    ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Need immediate help?',
+                        style: TextStyle(
+                          color: Colors.red.shade700,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '1-800-662-4357',
+                        style: TextStyle(
+                          color: Colors.red.shade700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
-} 
+}

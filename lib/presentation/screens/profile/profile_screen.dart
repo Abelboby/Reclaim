@@ -15,7 +15,8 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends State<ProfileScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final List<Animation<double>> _animations;
 
@@ -75,13 +76,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                     ],
                   ),
                 ),
-                child: AppAnimations.shimmer(
-                  child: Icon(
-                    Icons.account_circle,
-                    size: 120,
-                    color: Colors.white.withOpacity(0.2),
-                  ),
-                ),
               ),
               stretchModes: const [
                 StretchMode.zoomBackground,
@@ -106,7 +100,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         TextButton(
                           onPressed: () async {
                             Navigator.pop(context);
-                            await Provider.of<AuthProvider>(context, listen: false).signOut();
+                            await Provider.of<AuthProvider>(context,
+                                    listen: false)
+                                .signOut();
                           },
                           child: Text(
                             'Logout',
@@ -179,10 +175,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                       child: CircleAvatar(
                         radius: 60,
                         backgroundColor: AppColors.oceanBlue.withOpacity(0.1),
-                        backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                        backgroundImage:
+                            photoUrl != null ? NetworkImage(photoUrl) : null,
                         child: photoUrl == null
                             ? Text(
-                                user?.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                                user?.displayName
+                                        ?.substring(0, 1)
+                                        .toUpperCase() ??
+                                    'U',
                                 style: const TextStyle(
                                   fontSize: 40,
                                   fontWeight: FontWeight.bold,
@@ -284,7 +284,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         }
 
         final upcomingAppointments = provider.upcomingAppointments;
-        
+
         if (upcomingAppointments.isEmpty) {
           return Card(
             elevation: 0,
@@ -365,7 +365,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
               ],
             ),
             const SizedBox(height: 16),
-            ...upcomingAppointments.map((appointment) => _buildAppointmentCard(appointment)).toList(),
+            ...upcomingAppointments
+                .map((appointment) => _buildAppointmentCard(appointment))
+                .toList(),
           ],
         );
       },
@@ -464,7 +466,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 ),
                 Row(
                   children: [
-                    if (appointment.consultationType == 'video' && 
+                    if (appointment.consultationType == 'video' &&
                         appointment.meetingLink != null)
                       TextButton.icon(
                         onPressed: () async {
@@ -485,7 +487,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text('Cancel Appointment'),
-                            content: const Text('Are you sure you want to cancel this appointment?'),
+                            content: const Text(
+                                'Are you sure you want to cancel this appointment?'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
@@ -493,11 +496,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                               ),
                               TextButton(
                                 onPressed: () {
-                                  context.read<AppointmentsProvider>().cancelAppointment(appointment.id);
+                                  context
+                                      .read<AppointmentsProvider>()
+                                      .cancelAppointment(appointment.id);
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Appointment cancelled successfully'),
+                                      content: Text(
+                                          'Appointment cancelled successfully'),
                                       backgroundColor: Colors.red,
                                     ),
                                   );
@@ -611,4 +617,4 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       ),
     );
   }
-} 
+}
