@@ -17,6 +17,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   int _selectedIndex = 0;
   late AnimationController _animationController;
   late Animation<double> _rotationAnimation;
+  late Animation<double> _scaleAnimation;
 
   final List<Widget> _screens = const [
     HomeScreen(),
@@ -29,10 +30,17 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 500),
       vsync: this,
     );
-    _rotationAnimation = Tween(begin: 0.0, end: 0.125)
+    
+    _rotationAnimation = Tween(begin: 0.0, end: 0.25)
+        .animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOutBack,
+    ));
+
+    _scaleAnimation = Tween(begin: 1.0, end: 0.8)
         .animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOut,
@@ -52,40 +60,55 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   }
 
   void _onFabTapped() async {
-    _animationController.forward();
+    await _animationController.forward();
+    if (!mounted) return;
+    
     await Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) {
-          return const ReportScreen();
+          return FadeTransition(
+            opacity: animation,
+            child: const ReportScreen(),
+          );
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
+          const begin = Offset(0.0, 0.3);
           const end = Offset.zero;
           const curve = Curves.easeOutCubic;
+          
           var tween = Tween(begin: begin, end: end)
               .chain(CurveTween(curve: curve));
           var offsetAnimation = animation.drive(tween);
+          
           return SlideTransition(
             position: offsetAnimation,
             child: child,
           );
         },
+        transitionDuration: const Duration(milliseconds: 400),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
       ),
     );
-    _animationController.reverse();
+    
+    await _animationController.reverse();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      floatingActionButton: SizedBox(
-        width: 65,
-        height: 65,
-        child: FittedBox(
+      floatingActionButton: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          height: 64,
+          width: 64,
+          margin: const EdgeInsets.only(top: 30),
           child: FloatingActionButton(
             backgroundColor: AppColors.turquoise,
-            elevation: 4,
+            elevation: 8,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(32),
+            ),
             onPressed: _onFabTapped,
             child: RotationTransition(
               turns: _rotationAnimation,
@@ -100,36 +123,59 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
+        height: 65,
+        padding: EdgeInsets.zero,
         shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        child: NavigationBar(
-          height: 60,
-          onDestinationSelected: _onItemTapped,
-          selectedIndex: _selectedIndex,
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Home',
+        notchMargin: 12,
+        color: Theme.of(context).colorScheme.surface,
+        elevation: 8,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Expanded(
+              child: _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home'),
             ),
-            NavigationDestination(
-              icon: Icon(Icons.library_books_outlined),
-              selectedIcon: Icon(Icons.library_books),
-              label: 'Resources',
+            Expanded(
+              child: _buildNavItem(1, Icons.library_books_outlined, Icons.library_books, 'Resources'),
             ),
-            NavigationDestination(
-              icon: Icon(Icons.chat_bubble_outline),
-              selectedIcon: Icon(Icons.chat_bubble),
-              label: 'Chat',
+            const Expanded(child: SizedBox(width: 40)),
+            Expanded(
+              child: _buildNavItem(2, Icons.chat_bubble_outline, Icons.chat_bubble, 'Chat'),
             ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline),
-              selectedIcon: Icon(Icons.person),
-              label: 'Profile',
+            Expanded(
+              child: _buildNavItem(3, Icons.person_outline, Icons.person, 'Profile'),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, IconData selectedIcon, String label) {
+    final isSelected = _selectedIndex == index;
+    return InkWell(
+      onTap: () => _onItemTapped(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isSelected ? selectedIcon : icon,
+            color: isSelected 
+                ? AppColors.turquoise 
+                : Theme.of(context).colorScheme.onSurface.withOpacity(0.64),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isSelected 
+                  ? AppColors.turquoise 
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.64),
+            ),
+          ),
+        ],
       ),
     );
   }
