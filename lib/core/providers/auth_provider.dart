@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/material.dart';
+import '../../presentation/screens/main/main_screen.dart';
+import '../../main.dart';  // For navigatorKey
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -24,7 +27,6 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
@@ -33,25 +35,29 @@ class AuthProvider extends ChangeNotifier {
         return 'Google sign in was canceled';
       }
 
-      // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = 
           await googleUser.authentication;
 
-      // Create a new credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      // Sign in to Firebase with the Google credential
       final UserCredential userCredential = 
           await _auth.signInWithCredential(credential);
       
       _user = userCredential.user;
       _isLoading = false;
       notifyListeners();
-      return null;
 
+      // Navigate to MainScreen after successful login
+      if (_user != null) {
+        Navigator.of(navigatorKey.currentContext!).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
+      }
+
+      return null;
     } catch (e) {
       _isLoading = false;
       notifyListeners();
