@@ -1,170 +1,305 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/providers/news_provider.dart';
-import '../../../core/models/news_article.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'news_screen.dart';
+import 'mindfulness_screen.dart';
+import 'support_groups_screen.dart';
 
-class ResourcesScreen extends StatefulWidget {
+class ResourcesScreen extends StatelessWidget {
   const ResourcesScreen({super.key});
-
-  @override
-  State<ResourcesScreen> createState() => _ResourcesScreenState();
-}
-
-class _ResourcesScreenState extends State<ResourcesScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _loadHealthNews();
-  }
-
-  void _loadHealthNews() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NewsProvider>().fetchHealthNews();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Health Resources'),
+        title: const Text('Resources'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadHealthNews,
-          ),
-        ],
       ),
-      body: Consumer<NewsProvider>(
-        builder: (context, newsProvider, child) {
-          if (newsProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (newsProvider.error.isNotEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Error loading news',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: _loadHealthNews,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (newsProvider.articles.isEmpty) {
-            return const Center(
-              child: Text('No health articles available'),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: newsProvider.articles.length,
-            itemBuilder: (context, index) {
-              return _buildNewsCard(context, newsProvider.articles[index]);
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildNewsCard(BuildContext context, NewsArticle article) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _launchUrl(article.url),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              article.image,
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 200,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.error),
-                );
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    article.title,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    article.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.person,
-                        size: 16,
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          article.author,
-                          style: Theme.of(context).textTheme.bodySmall,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Icon(
-                        Icons.access_time,
-                        size: 16,
-                        color: Theme.of(context).textTheme.bodySmall?.color,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _formatDate(article.published),
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            _buildHeader(),
+            const SizedBox(height: 24),
+            _buildResourceCategories(context),
+            const SizedBox(height: 24),
+            _buildFeaturedContent(context),
           ],
         ),
       ),
     );
   }
 
-  String _formatDate(String dateStr) {
-    final date = DateTime.parse(dateStr);
-    return '${date.day}/${date.month}/${date.year}';
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Recovery Resources',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.oceanBlue,
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Explore tools and information to support your recovery journey',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
   }
 
-  Future<void> _launchUrl(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    }
+  Widget _buildResourceCategories(BuildContext context) {
+    final categories = [
+      {
+        'title': 'Mindfulness & Coping',
+        'icon': Icons.self_improvement,
+        'color': AppColors.turquoise,
+        'description': 'Meditation, breathing exercises, and stress management',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MindfulnessScreen()),
+        ),
+      },
+      {
+        'title': 'Recovery News',
+        'icon': Icons.article_outlined,
+        'color': AppColors.oceanBlue,
+        'description': 'Latest articles and research on recovery',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NewsScreen()),
+        ),
+      },
+      {
+        'title': 'Support Groups',
+        'icon': Icons.group_outlined,
+        'color': Colors.purple,
+        'description': 'Find local and online support communities',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SupportGroupsScreen()),
+        ),
+      },
+      {
+        'title': 'Emergency Help',
+        'icon': Icons.emergency_outlined,
+        'color': Colors.red,
+        'description': '24/7 crisis support and hotlines',
+        'onTap': () {
+          // Show emergency contacts dialog
+          showDialog(
+            context: context,
+            builder: (context) => _buildEmergencyDialog(context),
+          );
+        },
+      },
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        final category = categories[index];
+        return _buildCategoryCard(
+          context,
+          title: category['title'] as String,
+          icon: category['icon'] as IconData,
+          color: category['color'] as Color,
+          description: category['description'] as String,
+          onTap: category['onTap'] as VoidCallback,
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+    required String description,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(15),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withOpacity(0.8),
+                color,
+              ],
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 40,
+                color: Colors.white,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 12,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeaturedContent(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Featured Content',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 16),
+        Card(
+          elevation: 4,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.turquoise.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.tips_and_updates,
+                color: AppColors.turquoise,
+              ),
+            ),
+            title: const Text(
+              'Daily Recovery Tip',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: const Text(
+              'Practice mindfulness for 5 minutes today',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmergencyDialog(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: [
+          Icon(Icons.emergency, color: Colors.red.shade600),
+          const SizedBox(width: 8),
+          const Text('Emergency Support'),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildEmergencyContact(
+            'National Crisis Hotline',
+            '1-800-662-4357',
+            Icons.phone,
+          ),
+          const Divider(),
+          _buildEmergencyContact(
+            'Suicide Prevention Lifeline',
+            '988',
+            Icons.phone,
+          ),
+          const Divider(),
+          _buildEmergencyContact(
+            'Local Emergency',
+            '911',
+            Icons.emergency,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmergencyContact(String title, String contact, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: Colors.red.shade600),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  contact,
+                  style: TextStyle(
+                    color: Colors.blue.shade700,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 
