@@ -3,7 +3,6 @@ import '../home/home_screen.dart';
 import '../resources/resources_screen.dart';
 import '../chat/chat_screen.dart';
 import '../profile/profile_screen.dart';
-import '../../../core/constants/app_colors.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
