@@ -3,7 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../tracker/tracker_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/sobriety_provider.dart';
-import '../support/support_intro_screen.dart';
+import '../../../core/providers/auth_provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,13 +14,18 @@ class HomeScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: 120,
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Welcome Back',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              title: Consumer<AuthProvider>(
+                builder: (context, authProvider, _) {
+                  final userName = authProvider.user?.displayName?.split(' ')[0] ?? 'User';
+                  return Text(
+                    'Welcome back, $userName',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  );
+                },
               ),
               background: Container(
                 decoration: BoxDecoration(
@@ -29,31 +34,32 @@ class HomeScreen extends StatelessWidget {
                     end: Alignment.bottomLeft,
                     colors: [
                       AppColors.oceanBlue,
-                      AppColors.turquoise.withOpacity(0.8),
+                      AppColors.turquoise,
                     ],
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.healing,
-                    size: 80,
-                    color: Colors.white.withOpacity(0.3),
                   ),
                 ),
               ),
             ),
           ),
           SliverToBoxAdapter(
-            child: Column(
-              children: [
-                const SizedBox(height: 24),
-                _buildCurrentStreak(context),
-                const SizedBox(height: 24),
-                _buildQuickActions(context),
-                const SizedBox(height: 24),
-                _buildEmergencyCard(context),
-                const SizedBox(height: 24),
-              ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 24),
+                  _buildCurrentStreak(context),
+                  const SizedBox(height: 32),
+                  _buildMotivationalQuote(),
+                  const SizedBox(height: 32),
+                  _buildTrackProgressButton(context),
+                  const SizedBox(height: 32),
+                  _buildNextMilestone(),
+                  const SizedBox(height: 32),
+                  _buildEmergencyContact(),
+                  const SizedBox(height: 32),
+                ],
+              ),
             ),
           ),
         ],
@@ -67,55 +73,54 @@ class HomeScreen extends StatelessWidget {
         final data = provider.data;
         if (data == null) return const SizedBox.shrink();
 
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          child: Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.oceanBlue,
-                    AppColors.turquoise,
+        return Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          color: AppColors.oceanBlue.withOpacity(0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Current Streak',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppColors.oceanBlue,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                          '${data.currentStreak}',
+                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                color: AppColors.oceanBlue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'days',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: AppColors.oceanBlue.withOpacity(0.7),
+                              ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${data.currentStreak}',
-                        style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.local_fire_department,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Days Strong',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white70,
-                        ),
-                  ),
-                ],
-              ),
+                const Spacer(),
+                Icon(
+                  Icons.local_fire_department,
+                  color: AppColors.oceanBlue,
+                  size: 48,
+                ),
+              ],
             ),
           ),
         );
@@ -123,196 +128,210 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
-    final actions = [
-      {
-        'title': 'Track Progress',
-        'icon': Icons.trending_up,
-        'color': AppColors.oceanBlue,
-        'onTap': () {
+  Widget _buildMotivationalQuote() {
+    return Card(
+      elevation: 0,
+      color: AppColors.turquoise.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(
+              Icons.format_quote,
+              color: AppColors.turquoise,
+              size: 32,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Recovery is not a race. You don\'t have to feel guilty if it takes you longer than you thought it would.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade800,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTrackProgressButton(BuildContext context) {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const TrackerScreen()),
           );
         },
-      },
-      {
-        'title': 'AI Support',
-        'icon': Icons.psychology,
-        'color': AppColors.turquoise,
-        'onTap': () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SupportIntroScreen()),
-          );
-        },
-      },
-      {
-        'title': 'Resources',
-        'icon': Icons.library_books,
-        'color': AppColors.oceanBlue,
-        'onTap': () {
-          // Navigate to resources screen
-        },
-      },
-      {
-        'title': 'Community',
-        'icon': Icons.people_outline,
-        'color': AppColors.turquoise,
-        'onTap': () {
-          // Navigate to community screen
-        },
-      },
-    ];
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              'Quick Actions',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 1.5,
-            ),
-            itemCount: actions.length,
-            itemBuilder: (context, index) {
-              final action = actions[index];
-              return Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: InkWell(
-                  onTap: action['onTap'] as void Function(),
-                  borderRadius: BorderRadius.circular(15),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          (action['color'] as Color).withOpacity(0.8),
-                          (action['color'] as Color),
-                        ],
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          action['icon'] as IconData,
-                          color: Colors.white,
-                          size: 32,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          action['title'] as String,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmergencyCard(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.red.shade400,
-                Colors.red.shade600,
+                AppColors.oceanBlue,
+                AppColors.turquoise,
               ],
             ),
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Column(
+          child: Row(
             children: [
-              const Row(
-                children: [
-                  Icon(
-                    Icons.emergency,
-                    color: Colors.white,
-                    size: 24,
+              const Icon(
+                Icons.trending_up,
+                color: Colors.white,
+                size: 32,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Track Your Progress',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Log your daily journey and see your growth',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNextMilestone() {
+    return Card(
+      elevation: 0,
+      color: Colors.grey.shade50,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.flag,
+                  color: AppColors.oceanBlue,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Next Milestone',
+                  style: TextStyle(
+                    color: Colors.grey.shade800,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
-                  SizedBox(width: 8),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Consumer<SobrietyProvider>(
+              builder: (context, provider, _) {
+                final data = provider.data;
+                if (data == null) return const SizedBox.shrink();
+
+                final nextMilestone = (data.currentStreak ~/ 30 + 1) * 30;
+                final daysLeft = nextMilestone - data.currentStreak;
+
+                return Text(
+                  '$daysLeft days until $nextMilestone day milestone',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 15,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmergencyContact() {
+    return Card(
+      elevation: 0,
+      color: Colors.red.shade50,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.phone,
+                color: Colors.red.shade700,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Emergency Support',
+                    'Need immediate help?',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.red.shade700,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Call 1-800-662-4357',
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              const Text(
-                'Need immediate help? We\'re here 24/7',
-                style: TextStyle(
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  // Handle emergency call
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text(
-                  'Call Helpline',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
