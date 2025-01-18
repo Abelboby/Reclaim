@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 
 class MindfulnessScreen extends StatefulWidget {
   const MindfulnessScreen({super.key});
@@ -13,9 +14,13 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
   late AnimationController _breathingController;
   late Animation<double> _breathingAnimation;
   Timer? _breathingTimer;
-  String _breathingPhase = '';
+  String _breathingPhase = 'Inhale';
   int _breathingCount = 0;
   bool _isBreathingActive = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  Timer? _meditationTimer;
+  int _remainingSeconds = 0;
+  bool _isMeditating = false;
 
   @override
   void initState() {
@@ -24,7 +29,7 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
       duration: const Duration(seconds: 4),
       vsync: this,
     );
-    _breathingAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+    _breathingAnimation = Tween<double>(begin: 1.0, end: 1.5).animate(
       CurvedAnimation(
         parent: _breathingController,
         curve: Curves.easeInOut,
@@ -36,25 +41,18 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
   void dispose() {
     _breathingController.dispose();
     _breathingTimer?.cancel();
+    _meditationTimer?.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
-  void _startBreathingExercise(String type) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _BreathingExerciseSheet(
-        type: type,
-        onStart: () {
-          Navigator.pop(context);
-          _showBreathingOverlay();
-        },
-      ),
-    );
-  }
+  void _startBreathingExercise() {
+    setState(() {
+      _isBreathingActive = true;
+      _breathingCount = 0;
+      _breathingPhase = 'Inhale';
+    });
 
-  void _showBreathingOverlay() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -68,15 +66,6 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
         },
       ),
     );
-    _startBreathingAnimation();
-  }
-
-  void _startBreathingAnimation() {
-    setState(() {
-      _isBreathingActive = true;
-      _breathingCount = 0;
-      _breathingPhase = 'Inhale';
-    });
 
     _breathingController.repeat(reverse: true);
     
@@ -87,15 +76,33 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
       }
       
       setState(() {
-        _breathingCount++;
         if (_breathingPhase == 'Inhale') {
           _breathingPhase = 'Hold';
         } else if (_breathingPhase == 'Hold') {
           _breathingPhase = 'Exhale';
         } else {
           _breathingPhase = 'Inhale';
+          _breathingCount++;  // Increment count after each complete cycle
         }
       });
+
+      // Rebuild the overlay with updated values
+      if (context.mounted) {
+        Navigator.pop(context);
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => _BreathingOverlay(
+            animation: _breathingAnimation,
+            phase: _breathingPhase,
+            count: _breathingCount,
+            onClose: () {
+              _stopBreathingExercise();
+              Navigator.pop(context);
+            },
+          ),
+        );
+      }
     });
   }
 
@@ -107,40 +114,79 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
     _breathingTimer?.cancel();
   }
 
-  void _showMeditationPlayer(String title, String duration) {
-    showModalBottomSheet(
+  void _startMeditationTimer(int minutes) {
+    setState(() {
+      _isMeditating = true;
+      _remainingSeconds = minutes * 60;
+    });
+
+    _audioPlayer.play(AssetSource('sounds/meditation_bell.mp3'));
+
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _MeditationPlayerSheet(
-        title: title,
-        duration: duration,
+      barrierDismissible: false,
+      builder: (context) => StreamBuilder<int>(
+        stream: Stream.periodic(const Duration(seconds: 1), (i) => _remainingSeconds - i - 1)
+            .take(_remainingSeconds),
+        builder: (context, snapshot) {
+          final seconds = snapshot.data ?? _remainingSeconds;
+          if (seconds <= 0) {
+            _isMeditating = false;
+            _audioPlayer.play(AssetSource('sounds/meditation_bell.mp3'));
+            Future.delayed(const Duration(seconds: 1), () {
+              if (context.mounted) Navigator.pop(context);
+            });
+          }
+          return _MeditationTimerOverlay(
+            remainingSeconds: seconds,
+            onClose: () {
+              _stopMeditationTimer();
+              Navigator.pop(context);
+            },
+          );
+        },
       ),
     );
+  }
+
+  void _stopMeditationTimer() {
+    setState(() {
+      _isMeditating = false;
+      _remainingSeconds = 0;
+    });
+    _meditationTimer?.cancel();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mindfulness & Coping'),
+        title: const Text('Mindfulness'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildMeditationSection(context),
-            const SizedBox(height: 24),
-            _buildBreathingExercises(context),
-            const SizedBox(height: 24),
-            _buildStressManagement(context),
-            const SizedBox(height: 24),
-            _buildSleepHygiene(context),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white,
+              AppColors.turquoise.withOpacity(0.1),
+            ],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 24),
+              _buildBreathingExercise(),
+              const SizedBox(height: 24),
+              _buildMeditationTimer(),
+            ],
+          ),
         ),
       ),
     );
@@ -148,39 +194,56 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            AppColors.oceanBlue.withOpacity(0.8),
-            AppColors.turquoise.withOpacity(0.8),
+            AppColors.oceanBlue,
+            AppColors.turquoise,
           ],
         ),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.oceanBlue.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.self_improvement,
-            size: 48,
-            color: Colors.white,
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.self_improvement,
+              size: 48,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Mindfulness Tools',
+          const Text(
+            'Mindfulness Practice',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 28,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Practice these exercises to manage stress, anxiety, and cravings',
+            'Take a moment to breathe and center yourself',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white70,
+              color: Colors.white,
+              fontWeight: FontWeight.w300,
             ),
           ),
         ],
@@ -188,351 +251,90 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
     );
   }
 
-  Widget _buildMeditationSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Guided Meditations',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 180,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              _buildMeditationCard(
-                context,
-                title: 'Craving Management',
-                duration: '5 minutes',
-                icon: Icons.waves,
-                color: AppColors.oceanBlue,
-              ),
-              _buildMeditationCard(
-                context,
-                title: 'Stress Relief',
-                duration: '10 minutes',
-                icon: Icons.spa,
-                color: AppColors.turquoise,
-              ),
-              _buildMeditationCard(
-                context,
-                title: 'Body Scan',
-                duration: '15 minutes',
-                icon: Icons.accessibility_new,
-                color: Colors.purple,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMeditationCard(
-    BuildContext context, {
-    required String title,
-    required String duration,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.only(right: 16),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        child: InkWell(
-          onTap: () => _showMeditationPlayer(title, duration),
-          borderRadius: BorderRadius.circular(15),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  color.withOpacity(0.8),
-                  color,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 40),
-                const SizedBox(height: 16),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  duration,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBreathingExercises(BuildContext context) {
+  Widget _buildBreathingExercise() {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Breathing Exercises',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildBreathingTechnique(
-              '4-7-8 Breathing',
-              'Inhale for 4, hold for 7, exhale for 8',
-              Icons.air,
-              AppColors.oceanBlue,
-            ),
-            const Divider(),
-            _buildBreathingTechnique(
-              'Box Breathing',
-              'Equal counts of inhale, hold, exhale, and pause',
-              Icons.crop_square,
-              AppColors.turquoise,
-            ),
-            const Divider(),
-            _buildBreathingTechnique(
-              'Deep Belly Breathing',
-              'Focus on expanding your diaphragm',
-              Icons.circle_outlined,
-              Colors.purple,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBreathingTechnique(
-    String title,
-    String description,
-    IconData icon,
-    Color color,
-  ) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: color),
-      ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-      subtitle: Text(description),
-      trailing: ElevatedButton(
-        onPressed: () => _startBreathingExercise(title),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: const Text('Start'),
-      ),
-    );
-  }
-
-  Widget _buildStressManagement(BuildContext context) {
-    final techniques = [
-      {
-        'title': 'Progressive Muscle Relaxation',
-        'icon': Icons.accessibility_new,
-        'color': AppColors.oceanBlue,
-      },
-      {
-        'title': 'Grounding Techniques',
-        'icon': Icons.nature_people,
-        'color': AppColors.turquoise,
-      },
-      {
-        'title': 'Mindful Walking',
-        'icon': Icons.directions_walk,
-        'color': Colors.purple,
-      },
-      {
-        'title': 'Journaling Prompts',
-        'icon': Icons.edit_note,
-        'color': Colors.indigo,
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Stress Management',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.2,
-          ),
-          itemCount: techniques.length,
-          itemBuilder: (context, index) {
-            final technique = techniques[index];
-            return Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: InkWell(
-                onTap: () {
-                  // Show technique details
-                },
-                borderRadius: BorderRadius.circular(15),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        (technique['color'] as Color).withOpacity(0.8),
-                        technique['color'] as Color,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        technique['icon'] as IconData,
-                        size: 32,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          technique['title'] as String,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSleepHygiene(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 8,
+      shadowColor: AppColors.oceanBlue.withOpacity(0.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.indigo.withOpacity(0.8),
-              Colors.indigo,
+              Colors.white,
+              AppColors.oceanBlue.withOpacity(0.05),
             ],
           ),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
-                Icon(
-                  Icons.nightlight_round,
-                  color: Colors.white,
-                  size: 24,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.oceanBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.air,
+                    size: 24,
+                    color: AppColors.oceanBlue,
+                  ),
                 ),
-                SizedBox(width: 8),
-                Text(
-                  'Sleep Hygiene',
+                const SizedBox(width: 12),
+                const Text(
+                  'Breathing Exercise',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            _buildSleepTip(
-              'Consistent Schedule',
-              'Go to bed and wake up at the same time',
-              Icons.schedule,
+            const Text(
+              'Follow the animation to practice deep breathing. Inhale as the circle expands, hold, then exhale as it contracts.',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 15,
+                height: 1.5,
+              ),
             ),
-            const Divider(color: Colors.white24),
-            _buildSleepTip(
-              'Bedtime Routine',
-              'Develop a relaxing pre-sleep routine',
-              Icons.nightlight_round,
-            ),
-            const Divider(color: Colors.white24),
-            _buildSleepTip(
-              'Screen Time',
-              'Avoid screens 1 hour before bed',
-              Icons.phone_android,
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Center(
-              child: OutlinedButton(
-                onPressed: () {
-                  // Show sleep guide
-                },
-                style: OutlinedButton.styleFrom(
+              child: ElevatedButton(
+                onPressed: _startBreathingExercise,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.oceanBlue,
                   foregroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
+                  elevation: 4,
                 ),
-                child: const Text('View Full Sleep Guide'),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.play_arrow),
+                    SizedBox(width: 8),
+                    Text(
+                      'Start Breathing Exercise',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -541,94 +343,112 @@ class _MindfulnessScreenState extends State<MindfulnessScreen> with SingleTicker
     );
   }
 
-  Widget _buildSleepTip(String title, String description, IconData icon) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white70),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      subtitle: Text(
-        description,
-        style: TextStyle(color: Colors.white.withOpacity(0.7)),
-      ),
-    );
-  }
-}
-
-class _BreathingExerciseSheet extends StatelessWidget {
-  final String type;
-  final VoidCallback onStart;
-
-  const _BreathingExerciseSheet({
-    required this.type,
-    required this.onStart,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
+  Widget _buildMeditationTimer() {
+    return Card(
+      elevation: 8,
+      shadowColor: AppColors.turquoise.withOpacity(0.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.white,
+              AppColors.turquoise.withOpacity(0.05),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text(
-                  type,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.turquoise.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.timer,
+                    size: 24,
+                    color: AppColors.turquoise,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(width: 12),
                 const Text(
-                  'This exercise will help you focus on your breath and reduce stress. Find a comfortable position and when you\'re ready, tap Start.',
+                  'Meditation Timer',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: onStart,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.oceanBlue,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      'Start Exercise',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            const Text(
+              'Choose a duration for your meditation. A bell will sound at the start and end.',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 15,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildTimerButton(5),
+                _buildTimerButton(10),
+                _buildTimerButton(15),
+                _buildTimerButton(20),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimerButton(int minutes) {
+    return SizedBox(
+      width: 80,
+      height: 80,
+      child: ElevatedButton(
+        onPressed: () => _startMeditationTimer(minutes),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.turquoise,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.zero,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
-        ],
+          elevation: 4,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$minutes',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Text(
+              'min',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -650,7 +470,7 @@ class _BreathingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black87,
+      color: Colors.black.withOpacity(0.9),
       child: Stack(
         children: [
           Center(
@@ -660,33 +480,52 @@ class _BreathingOverlay extends StatelessWidget {
                 ScaleTransition(
                   scale: animation,
                   child: Container(
-                    width: 150,
-                    height: 150,
+                    width: 200,
+                    height: 200,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: AppColors.turquoise,
-                        width: 3,
+                        width: 4,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.turquoise.withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(
                         phase,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
                         ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
-                Text(
-                  'Breath count: $count',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 18,
+                const SizedBox(height: 40),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Text(
+                    'Breath count: $count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w300,
+                    ),
                   ),
                 ),
               ],
@@ -696,7 +535,11 @@ class _BreathingOverlay extends StatelessWidget {
             top: 40,
             right: 16,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
+              icon: const Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 32,
+              ),
               onPressed: onClose,
             ),
           ),
@@ -706,91 +549,80 @@ class _BreathingOverlay extends StatelessWidget {
   }
 }
 
-class _MeditationPlayerSheet extends StatelessWidget {
-  final String title;
-  final String duration;
+class _MeditationTimerOverlay extends StatelessWidget {
+  final int remainingSeconds;
+  final VoidCallback onClose;
 
-  const _MeditationPlayerSheet({
-    required this.title,
-    required this.duration,
+  const _MeditationTimerOverlay({
+    required this.remainingSeconds,
+    required this.onClose,
   });
+
+  String _formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return Material(
+      color: Colors.black.withOpacity(0.9),
+      child: Stack(
         children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
+          Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.self_improvement,
+                    size: 80,
+                    color: Colors.white70,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  duration,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
+                const SizedBox(height: 40),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 20,
                   ),
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.replay_10),
-                      onPressed: () {},
-                      color: Colors.grey,
+                  decoration: BoxDecoration(
+                    color: AppColors.turquoise.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(40),
+                    border: Border.all(
+                      color: AppColors.turquoise.withOpacity(0.3),
+                      width: 2,
                     ),
-                    const SizedBox(width: 32),
-                    FloatingActionButton(
-                      onPressed: () {},
-                      backgroundColor: AppColors.oceanBlue,
-                      child: const Icon(Icons.play_arrow),
+                  ),
+                  child: Text(
+                    _formatDuration(remainingSeconds),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 64,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
                     ),
-                    const SizedBox(width: 32),
-                    IconButton(
-                      icon: const Icon(Icons.forward_10),
-                      onPressed: () {},
-                      color: Colors.grey,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                LinearProgressIndicator(
-                  value: 0,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.oceanBlue),
-                ),
-                const SizedBox(height: 8),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('0:00'),
-                    Text('5:00'),
-                  ],
+                  ),
                 ),
               ],
+            ),
+          ),
+          Positioned(
+            top: 40,
+            right: 16,
+            child: IconButton(
+              icon: const Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 32,
+              ),
+              onPressed: onClose,
             ),
           ),
         ],
