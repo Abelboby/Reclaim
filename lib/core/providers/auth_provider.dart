@@ -11,9 +11,11 @@ class AuthProvider extends ChangeNotifier {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   
   User? _user;
+  String? _photoUrl;
   bool _isLoading = false;
 
   User? get user => _user;
+  String? get photoUrl => _photoUrl;
   bool get isLoading => _isLoading;
 
   AuthProvider() {
@@ -48,6 +50,7 @@ class AuthProvider extends ChangeNotifier {
           await _auth.signInWithCredential(credential);
       
       _user = userCredential.user;
+      _photoUrl = googleUser.photoUrl;
       _isLoading = false;
       notifyListeners();
 

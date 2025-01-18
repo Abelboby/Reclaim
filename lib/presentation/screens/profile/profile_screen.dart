@@ -54,7 +54,7 @@ class ProfileScreen extends StatelessWidget {
       body: ListView(
         children: [
           const SizedBox(height: 20),
-          _buildProfileHeader(context, user),
+          _buildProfileHeader(context),
           const SizedBox(height: 20),
           _buildProfileStats(),
           const SizedBox(height: 20),
@@ -66,33 +66,48 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context, user) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 50,
-          backgroundColor: AppColors.turquoise,
-          child: Text(
-            user?.displayName?.substring(0, 1).toUpperCase() ?? 'U',
-            style: const TextStyle(
-              fontSize: 40,
-              color: Colors.white,
-            ),
+  Widget _buildProfileHeader(BuildContext context) {
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        final user = authProvider.user;
+        final photoUrl = authProvider.photoUrl;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: AppColors.oceanBlue.withOpacity(0.1),
+                backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
+                child: photoUrl == null
+                    ? Text(
+                        user?.displayName?.substring(0, 1).toUpperCase() ?? 'U',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.oceanBlue,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                user?.displayName ?? 'User',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              Text(
+                user?.email ?? '',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey,
+                    ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          user?.displayName ?? 'User',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          user?.email ?? 'email@example.com',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

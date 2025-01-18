@@ -5,7 +5,6 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../../core/providers/sobriety_provider.dart';
 import '../../../core/models/sobriety_data.dart';
 import '../../../core/constants/app_colors.dart';
-import 'dart:math' show pi;
 
 class TrackerScreen extends StatefulWidget {
   const TrackerScreen({super.key});
