@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 import '../../presentation/screens/main/main_screen.dart';
 import '../../main.dart';  // For navigatorKey
+import '../../presentation/screens/splash_screen/splash_screen.dart';
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -66,9 +67,21 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
-    await _auth.signOut();
-    await _googleSignIn.signOut();
-    _user = null;
-    notifyListeners();
+    try {
+      await _auth.signOut();
+      await _googleSignIn.signOut();
+      _user = null;
+      notifyListeners();
+      
+      // Navigate back to splash screen
+      if (navigatorKey.currentContext != null) {
+        await Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const SplashScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error signing out: $e');
+    }
   }
 } 
