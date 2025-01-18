@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome to Recliam',
+              'Welcome to Reclaim',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),

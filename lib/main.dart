@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       create: (_) => AuthProvider(),
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Recliam',
+        title: 'Reclaim',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
