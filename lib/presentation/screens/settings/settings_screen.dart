@@ -9,10 +9,14 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
         centerTitle: true,
+        backgroundColor: isDark ? AppColors.darkTeal : AppColors.oceanBlue,
+        foregroundColor: Colors.white,
       ),
       body: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
@@ -20,7 +24,7 @@ class SettingsScreen extends StatelessWidget {
             children: [
               const _SectionHeader(title: 'Appearance'),
               _buildThemeSwitcher(context, themeProvider),
-              const Divider(),
+              Divider(color: isDark ? Colors.white30 : Colors.black12),
               const _SectionHeader(title: 'Notifications'),
               _buildSettingsTile(
                 context: context,
@@ -34,7 +38,7 @@ class SettingsScreen extends StatelessWidget {
                   activeColor: AppColors.turquoise,
                 ),
               ),
-              const Divider(),
+              Divider(color: isDark ? Colors.white30 : Colors.black12),
               const _SectionHeader(title: 'Privacy'),
               _buildSettingsTile(
                 context: context,
@@ -52,12 +56,15 @@ class SettingsScreen extends StatelessWidget {
                 context: context,
                 title: 'Data Usage',
                 subtitle: 'Manage how app uses data',
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
                 onTap: () {
                   // Navigate to data usage settings
                 },
               ),
-              const Divider(),
+              Divider(color: isDark ? Colors.white30 : Colors.black12),
               const _SectionHeader(title: 'About'),
               _buildSettingsTile(
                 context: context,
@@ -67,7 +74,10 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingsTile(
                 context: context,
                 title: 'Terms of Service',
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
                 onTap: () {
                   // Navigate to terms of service
                 },
@@ -75,7 +85,10 @@ class SettingsScreen extends StatelessWidget {
               _buildSettingsTile(
                 context: context,
                 title: 'Privacy Policy',
-                trailing: const Icon(Icons.chevron_right),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
                 onTap: () {
                   // Navigate to privacy policy
                 },
@@ -88,6 +101,8 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildThemeSwitcher(BuildContext context, ThemeProvider themeProvider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return _buildSettingsTile(
       context: context,
       title: 'Dark Mode',
@@ -111,9 +126,24 @@ class SettingsScreen extends StatelessWidget {
     Widget? trailing,
     VoidCallback? onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return ListTile(
-      title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle) : null,
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      subtitle: subtitle != null 
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
+            ) 
+          : null,
       trailing: trailing,
       onTap: onTap,
     );
@@ -127,12 +157,14 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         title,
         style: TextStyle(
-          color: AppColors.oceanBlue,
+          color: isDark ? AppColors.turquoise : AppColors.oceanBlue,
           fontSize: 14,
           fontWeight: FontWeight.bold,
         ),

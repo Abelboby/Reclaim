@@ -19,20 +19,19 @@ class AppTheme {
         surface: Colors.white,
         onSurface: AppColors.darkTeal,
       ),
-      useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.mintWhite,
-      textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: AppColors.darkTeal),
-        bodyMedium: TextStyle(color: AppColors.darkTeal),
-      ),
+      scaffoldBackgroundColor: Colors.white,
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.oceanBlue,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.turquoise,
-        foregroundColor: Colors.white,
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(color: Colors.black87),
+        bodyMedium: TextStyle(color: Colors.black87),
+        titleLarge: TextStyle(color: Colors.black87),
+        titleMedium: TextStyle(color: Colors.black87),
       ),
+      useMaterial3: true,
     );
   }
 
@@ -53,20 +52,19 @@ class AppTheme {
         surface: AppColors.darkSurface,
         onSurface: Colors.white,
       ),
-      useMaterial3: true,
       scaffoldBackgroundColor: AppColors.darkBackground,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.darkTeal,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       textTheme: const TextTheme(
         bodyLarge: TextStyle(color: Colors.white),
         bodyMedium: TextStyle(color: Colors.white),
+        titleLarge: TextStyle(color: Colors.white),
+        titleMedium: TextStyle(color: Colors.white),
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.darkSurface,
-        foregroundColor: Colors.white,
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.turquoise,
-        foregroundColor: Colors.white,
-      ),
+      useMaterial3: true,
     );
   }
 } 
