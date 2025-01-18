@@ -9,6 +9,7 @@ import 'core/providers/theme_provider.dart';
 import 'core/providers/news_provider.dart';
 import 'core/providers/chat_provider.dart';
 import 'core/providers/sobriety_provider.dart';
+import 'core/providers/support_groups_provider.dart';
 
 // Make it available for other files to import
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => NewsProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider(prefs)),
         ChangeNotifierProvider(create: (_) => SobrietyProvider(prefs)),
+        ChangeNotifierProvider(create: (_) => SupportGroupsProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {

@@ -1,8 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/providers/support_groups_provider.dart';
+import '../../widgets/support_groups/group_card.dart';
+import '../../widgets/support_groups/loading_group_card.dart';
+import 'support_group_details_screen.dart';
 
-class SupportGroupsScreen extends StatelessWidget {
+class SupportGroupsScreen extends StatefulWidget {
   const SupportGroupsScreen({super.key});
+
+  @override
+  State<SupportGroupsScreen> createState() => _SupportGroupsScreenState();
+}
+
+class _SupportGroupsScreenState extends State<SupportGroupsScreen> {
+  final _searchController = TextEditingController();
+  bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<SupportGroupsProvider>();
+      provider.fetchNearbyGroups();
+      provider.fetchOnlineCommunities();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,20 +40,62 @@ class SupportGroupsScreen extends StatelessWidget {
         title: const Text('Support Groups'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildLocalGroups(context),
-            const SizedBox(height: 24),
-            _buildOnlineCommunities(context),
-            const SizedBox(height: 24),
-            _buildFamilySupport(context),
-          ],
-        ),
+      body: Consumer<SupportGroupsProvider>(
+        builder: (context, provider, child) {
+          if (provider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    provider.error!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      provider.fetchNearbyGroups();
+                      provider.fetchOnlineCommunities();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              await Future.wait([
+                provider.fetchNearbyGroups(),
+                provider.fetchOnlineCommunities(),
+              ]);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 24),
+                  _buildSearchBar(),
+                  const SizedBox(height: 24),
+                  _buildLocalGroups(provider),
+                  const SizedBox(height: 24),
+                  _buildOnlineCommunities(provider),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -59,7 +130,53 @@ class SupportGroupsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLocalGroups(BuildContext context) {
+  Widget _buildSearchBar() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Consumer<SupportGroupsProvider>(
+              builder: (context, provider, child) {
+                return TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search support groups...',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _isSearching
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _isSearching = false;
+                              });
+                              provider.search('');
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _isSearching = value.isNotEmpty;
+                    });
+                    provider.search(value);
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocalGroups(SupportGroupsProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -71,69 +188,62 @@ class SupportGroupsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+        if (provider.isLoading)
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) => const LoadingGroupCard(),
+          )
+        else if (provider.groups.isEmpty)
+          Center(
             child: Column(
               children: [
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Enter your location',
-                    prefixIcon: const Icon(Icons.location_on),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
+                const Icon(
+                  Icons.location_off,
+                  size: 48,
+                  color: Colors.grey,
                 ),
                 const SizedBox(height: 16),
+                const Text(
+                  'No local groups found',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 8),
                 ElevatedButton(
-                  onPressed: () {
-                    // Implement location search
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.oceanBlue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text('Find Nearby Groups'),
+                  onPressed: () => provider.fetchNearbyGroups(),
+                  child: const Text('Try Again'),
                 ),
               ],
             ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: provider.groups.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final group = provider.groups[index];
+              return GroupCard(
+                group: group,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SupportGroupDetailsScreen(group: group),
+                    ),
+                  );
+                },
+              );
+            },
           ),
-        ),
       ],
     );
   }
 
-  Widget _buildOnlineCommunities(BuildContext context) {
-    final communities = [
-      {
-        'name': 'Recovery Chat Room',
-        'members': '1.2k online',
-        'description': '24/7 peer support and discussion',
-        'icon': Icons.chat_bubble_outline,
-      },
-      {
-        'name': 'Daily Check-in Group',
-        'members': '3.5k members',
-        'description': 'Share your progress and support others',
-        'icon': Icons.check_circle_outline,
-      },
-      {
-        'name': 'Newcomers Welcome',
-        'members': '850 online',
-        'description': 'Get started on your recovery journey',
-        'icon': Icons.emoji_people,
-      },
-    ];
-
+  Widget _buildOnlineCommunities(SupportGroupsProvider provider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,141 +255,43 @@ class SupportGroupsScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        ...communities.map((community) => Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.turquoise.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                community['icon'] as IconData,
-                color: AppColors.turquoise,
-              ),
-            ),
-            title: Text(
-              community['name'] as String,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(community['members'] as String),
-                Text(community['description'] as String),
-              ],
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.arrow_forward_ios),
-              onPressed: () {
-                // Implement community navigation
-              },
-            ),
-          ),
-        )).toList(),
-      ],
-    );
-  }
-
-  Widget _buildFamilySupport(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(
-                  Icons.family_restroom,
-                  color: AppColors.oceanBlue,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'Family & Friends Support',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Recovery affects the whole family. Find resources and support groups specifically for loved ones:',
+        if (provider.isLoading)
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) => const LoadingGroupCard(),
+          )
+        else if (provider.onlineCommunities.isEmpty)
+          const Center(
+            child: Text(
+              'No online communities available',
               style: TextStyle(color: Colors.grey),
             ),
-            const SizedBox(height: 16),
-            _buildFamilyResourceButton(
-              'Al-Anon Family Groups',
-              'Support for families of alcoholics',
-              Icons.people_outline,
-            ),
-            const SizedBox(height: 8),
-            _buildFamilyResourceButton(
-              'Nar-Anon Family Groups',
-              'Support for families of addicts',
-              Icons.support,
-            ),
-            const SizedBox(height: 8),
-            _buildFamilyResourceButton(
-              'Family Counseling',
-              'Find family therapists specializing in addiction',
-              Icons.psychology,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFamilyResourceButton(String title, String subtitle, IconData icon) {
-    return OutlinedButton(
-      onPressed: () {
-        // Implement resource navigation
-      },
-      style: OutlinedButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-        padding: const EdgeInsets.all(16),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.oceanBlue),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: provider.onlineCommunities.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final community = provider.onlineCommunities[index];
+              return GroupCard(
+                group: community,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SupportGroupDetailsScreen(group: community),
+                    ),
+                  );
+                },
+              );
+            },
           ),
-          const Icon(Icons.arrow_forward_ios, size: 16),
-        ],
-      ),
+      ],
     );
   }
 } 
