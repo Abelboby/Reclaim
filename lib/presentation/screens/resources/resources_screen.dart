@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import 'news_screen.dart';
 import 'mindfulness_screen.dart';
 import 'support_groups_screen.dart';
+import 'law_enforcement_screen.dart';
 
 class ResourcesScreen extends StatelessWidget {
   const ResourcesScreen({super.key});
@@ -84,6 +85,16 @@ class ResourcesScreen extends StatelessWidget {
         'onTap': () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const SupportGroupsScreen()),
+        ),
+      },
+      {
+        'title': 'Law Enforcement & Policy',
+        'icon': Icons.policy_outlined,
+        'color': Colors.indigo,
+        'description': 'Data analytics and policy insights',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const LawEnforcementScreen()),
         ),
       },
       {
