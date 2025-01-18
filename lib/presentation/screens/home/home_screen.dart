@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../tracker/tracker_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/sobriety_provider.dart';
+import '../support/support_intro_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -136,11 +137,14 @@ class HomeScreen extends StatelessWidget {
         },
       },
       {
-        'title': 'Chat Support',
-        'icon': Icons.chat_bubble_outline,
+        'title': 'AI Support',
+        'icon': Icons.psychology,
         'color': AppColors.turquoise,
         'onTap': () {
-          // Navigate to chat screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SupportIntroScreen()),
+          );
         },
       },
       {

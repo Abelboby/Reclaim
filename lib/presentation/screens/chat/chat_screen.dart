@@ -4,7 +4,12 @@ import '../../../core/providers/chat_provider.dart';
 import '../../../core/models/chat_message.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String? initialMessage;
+  
+  const ChatScreen({
+    super.key,
+    this.initialMessage,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -13,6 +18,25 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _textController = TextEditingController();
   final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _textController.text = widget.initialMessage!;
+        _handleSend();
+      });
+    }
+  }
+
+  void _handleSend() {
+    final message = _textController.text.trim();
+    if (message.isNotEmpty) {
+      context.read<ChatProvider>().sendMessage(message);
+      _textController.clear();
+    }
+  }
 
   @override
   void dispose() {

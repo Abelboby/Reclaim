@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
 import '../resources/resources_screen.dart';
-import '../chat/chat_screen.dart';
+import '../support/support_intro_screen.dart';
 import '../profile/profile_screen.dart';
 import '../report/report_screen.dart';
 import '../../../core/constants/app_colors.dart';
@@ -22,7 +22,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   final List<Widget> _screens = const [
     HomeScreen(),
     ResourcesScreen(),
-    ChatScreen(),
+    SupportIntroScreen(),
     ProfileScreen(),
   ];
 
@@ -140,7 +140,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             ),
             const Expanded(child: SizedBox(width: 40)),
             Expanded(
-              child: _buildNavItem(2, Icons.chat_bubble_outline, Icons.chat_bubble, 'Chat'),
+              child: _buildNavItem(2, Icons.psychology, Icons.psychology_outlined, 'Support'),
             ),
             Expanded(
               child: _buildNavItem(3, Icons.person_outline, Icons.person, 'Profile'),
