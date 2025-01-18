@@ -1,132 +1,159 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/animations/app_animations.dart';
 import '../chat/chat_screen.dart';
+import 'professional_consultation_screen.dart';
 
-class SupportIntroScreen extends StatelessWidget {
+class SupportIntroScreen extends StatefulWidget {
   const SupportIntroScreen({super.key});
+
+  @override
+  State<SupportIntroScreen> createState() => _SupportIntroScreenState();
+}
+
+class _SupportIntroScreenState extends State<SupportIntroScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _animations = List.generate(
+      3,
+      (index) => CurvedAnimation(
+        parent: _controller,
+        curve: Interval(
+          index * 0.1,
+          0.6 + (index * 0.1),
+          curve: Curves.easeOutCubic,
+        ),
+      ),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Support Companion'),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildHowItHelps(context),
-            const SizedBox(height: 24),
-            _buildStarterTopics(context),
-            const SizedBox(height: 24),
-            _buildEmergencySupport(context),
-            const SizedBox(height: 24),
-            _buildPrivacyNote(context),
-            const SizedBox(height: 32),
-            _buildStartButton(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Icon(
-          Icons.psychology,
-          size: 48,
-          color: AppColors.oceanBlue,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Your 24/7 Recovery Guide',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.oceanBlue,
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'A judgment-free space where you can find support, motivation, and guidance on your recovery journey.',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHowItHelps(BuildContext context) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'How It Helps',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200,
+            floating: false,
+            pinned: true,
+            stretch: true,
+            flexibleSpace: FlexibleSpaceBar(
+              title: const Text(
+                'Get Support',
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildHelpItem(
-              Icons.track_changes,
-              'Track Progress',
-              'Monitor your recovery journey and celebrate milestones',
-            ),
-            _buildHelpItem(
-              Icons.psychology_outlined,
-              'Coping Strategies',
-              'Learn and practice effective techniques to manage triggers',
-            ),
-            _buildHelpItem(
-              Icons.emoji_objects,
-              'Daily Motivation',
-              'Get inspired with personalized encouragement',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHelpItem(IconData icon, String title, String description) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.turquoise),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      AppColors.oceanBlue,
+                      AppColors.turquoise,
+                    ],
                   ),
                 ),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
+                child: AppAnimations.shimmer(
+                  child: Icon(
+                    Icons.support_agent,
+                    size: 120,
+                    color: Colors.white.withOpacity(0.2),
                   ),
                 ),
+              ),
+              stretchModes: const [
+                StretchMode.zoomBackground,
+                StretchMode.blurBackground,
               ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppAnimations.slideUp(
+                    animation: _animations[0],
+                    child: const Text(
+                      'Choose Your Support Option',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  AppAnimations.slideUp(
+                    animation: _animations[0],
+                    child: Text(
+                      'Get the help you need, when you need it',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  AppAnimations.slideUp(
+                    animation: _animations[1],
+                    child: _buildSupportOption(
+                      title: 'AI Support Chat',
+                      description: '24/7 instant support powered by AI. Get immediate responses to your questions and concerns.',
+                      icon: Icons.smart_toy,
+                      color: AppColors.oceanBlue,
+                      features: [
+                        'Available 24/7',
+                        'Instant responses',
+                        'Personalized support',
+                        'Complete privacy',
+                      ],
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ChatScreen()),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  AppAnimations.slideUp(
+                    animation: _animations[2],
+                    child: _buildSupportOption(
+                      title: 'Professional Consultation',
+                      description: 'Schedule video or in-person consultations with experienced medical professionals.',
+                      icon: Icons.medical_services,
+                      color: AppColors.turquoise,
+                      features: [
+                        'Licensed professionals',
+                        'Flexible scheduling',
+                        'Video & in-person options',
+                        'Secure consultations',
+                      ],
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ProfessionalConsultationScreen()),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -134,156 +161,105 @@ class SupportIntroScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStarterTopics(BuildContext context) {
-    final topics = [
-      'I need help with a craving',
-      'Feeling triggered right now',
-      'Share my progress',
-      'Need motivation',
-      'Develop a coping plan',
-    ];
-
+  Widget _buildSupportOption({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required List<String> features,
+    required VoidCallback onTap,
+  }) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Start a Conversation',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            border: Border.all(color: color.withOpacity(0.2)),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: color,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: topics.map((topic) => ActionChip(
-                label: Text(topic),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(initialMessage: topic),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: features.map((feature) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: color,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          feature,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   );
-                },
-              )).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmergencySupport(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.red.shade200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.emergency, color: Colors.red),
-              SizedBox(width: 8),
-              Text(
-                'Need Immediate Help?',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+                }).toList(),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'While I\'m here to support you, please remember that I\'m an AI assistant. If you\'re in crisis:',
-            style: TextStyle(fontSize: 14),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: () {
-              // Implement emergency contact functionality
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.phone),
-                SizedBox(width: 8),
-                Text('Contact Emergency Support'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrivacyNote(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Privacy & Trust',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Your conversations are private and confidential. We use industry-standard encryption to protect your data.',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStartButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ChatScreen()),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.oceanBlue,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        child: const Text(
-          'Start Conversation',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
           ),
         ),
       ),

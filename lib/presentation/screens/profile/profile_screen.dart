@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/providers/appointments_provider.dart';
+import '../../../core/models/appointment.dart';
 import '../settings/settings_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/animations/app_animations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -246,6 +249,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildAppointmentsSection(context),
+          const SizedBox(height: 32),
           _buildActionButton(
             context,
             'Edit Profile',
@@ -267,6 +272,259 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             () {},
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAppointmentsSection(BuildContext context) {
+    return Consumer<AppointmentsProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final upcomingAppointments = provider.upcomingAppointments;
+        
+        if (upcomingAppointments.isEmpty) {
+          return Card(
+            elevation: 0,
+            color: Colors.grey.shade50,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Upcoming Appointments',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 48,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'No upcoming appointments',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/support');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.oceanBlue,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text('Schedule Consultation'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Upcoming Appointments',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // Navigate to appointments history
+                  },
+                  child: const Text('View All'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...upcomingAppointments.map((appointment) => _buildAppointmentCard(appointment)).toList(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAppointmentCard(Appointment appointment) {
+    return Card(
+      elevation: 0,
+      color: Colors.grey.shade50,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundImage: NetworkImage(appointment.doctorPhotoUrl),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        appointment.doctorName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        appointment.doctorSpecialty,
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            appointment.consultationType == 'video'
+                                ? Icons.videocam
+                                : Icons.person,
+                            size: 16,
+                            color: AppColors.oceanBlue,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            appointment.consultationType == 'video'
+                                ? 'Video Call'
+                                : 'In-Person',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.oceanBlue,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(
+                            Icons.access_time,
+                            size: 16,
+                            color: Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${appointment.dateTime.hour}:${appointment.dateTime.minute.toString().padLeft(2, '0')}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${appointment.dateTime.day}/${appointment.dateTime.month}/${appointment.dateTime.year}',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 14,
+                  ),
+                ),
+                Row(
+                  children: [
+                    if (appointment.consultationType == 'video' && 
+                        appointment.meetingLink != null)
+                      TextButton.icon(
+                        onPressed: () async {
+                          final url = Uri.parse(appointment.meetingLink!);
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url);
+                          }
+                        },
+                        icon: const Icon(Icons.video_call),
+                        label: const Text('Join'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.oceanBlue,
+                        ),
+                      ),
+                    TextButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Cancel Appointment'),
+                            content: const Text('Are you sure you want to cancel this appointment?'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('No'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  context.read<AppointmentsProvider>().cancelAppointment(appointment.id);
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Appointment cancelled successfully'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  'Yes, Cancel',
+                                  style: TextStyle(
+                                    color: Colors.red.shade600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.cancel_outlined),
+                      label: const Text('Cancel'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
