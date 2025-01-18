@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../tracker/tracker_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,6 +20,18 @@ class HomeScreen extends StatelessWidget {
           _buildQuickActions(context),
           const SizedBox(height: 16),
           _buildRecentActivities(context),
+          ListTile(
+            leading: const Icon(Icons.track_changes),
+            title: const Text('Track Progress'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const TrackerScreen(),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -103,7 +116,15 @@ class HomeScreen extends StatelessWidget {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          // Handle action tap
+          if (title == 'Track Progress') {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const TrackerScreen(),
+              ),
+            );
+          }
+          // Handle other actions
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
