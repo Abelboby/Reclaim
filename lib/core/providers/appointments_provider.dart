@@ -7,21 +7,23 @@ class AppointmentsProvider extends ChangeNotifier {
   String? _error;
   List<Appointment> _appointments = [];
   List<MedicalProfessional> _professionals = [];
-  
+
   // Getters
   bool get isLoading => _isLoading;
   String? get error => _error;
   List<Appointment> get appointments => _appointments;
   List<MedicalProfessional> get professionals => _professionals;
-  
+
   List<Appointment> get upcomingAppointments => _appointments
-    .where((apt) => apt.status == 'upcoming' && apt.dateTime.isAfter(DateTime.now()))
-    .toList()
+      .where((apt) =>
+          apt.status == 'upcoming' && apt.dateTime.isAfter(DateTime.now()))
+      .toList()
     ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
 
   List<Appointment> get pastAppointments => _appointments
-    .where((apt) => apt.status == 'completed' || apt.dateTime.isBefore(DateTime.now()))
-    .toList()
+      .where((apt) =>
+          apt.status == 'completed' || apt.dateTime.isBefore(DateTime.now()))
+      .toList()
     ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
 
   // Initialize with mock data for now
@@ -47,21 +49,24 @@ class AppointmentsProvider extends ChangeNotifier {
   String _generateGoogleMeetLink() {
     // In a real app, this would integrate with Google Calendar API
     // For now, we'll generate a mock link
-    final meetId = DateTime.now().millisecondsSinceEpoch.toString().substring(5);
+    final meetId =
+        DateTime.now().millisecondsSinceEpoch.toString().substring(5);
     return 'https://meet.google.com/$meetId';
   }
 
-  Future<void> bookAppointment(String doctorId, DateTime dateTime, String consultationType) async {
+  Future<void> bookAppointment(
+      String doctorId, DateTime dateTime, String consultationType) async {
     try {
       _isLoading = true;
       notifyListeners();
 
       // TODO: Replace with actual API call
       await Future.delayed(const Duration(seconds: 1));
-      
+
       final doctor = _professionals.firstWhere((p) => p.id == doctorId);
-      final meetingLink = consultationType == 'video' ? _generateGoogleMeetLink() : null;
-      
+      final meetingLink =
+          consultationType == 'video' ? _generateGoogleMeetLink() : null;
+
       final appointment = Appointment(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         doctorId: doctorId,
@@ -91,7 +96,7 @@ class AppointmentsProvider extends ChangeNotifier {
 
       // TODO: Replace with actual API call
       await Future.delayed(const Duration(seconds: 1));
-      
+
       final index = _appointments.indexWhere((apt) => apt.id == appointmentId);
       if (index != -1) {
         _appointments.removeAt(index);
@@ -113,7 +118,8 @@ class AppointmentsProvider extends ChangeNotifier {
         name: 'Dr. Sarah Johnson',
         specialty: 'Addiction Psychiatrist',
         qualifications: ['MD', 'PhD in Psychiatry'],
-        bio: 'Specialized in addiction treatment with 15 years of experience in helping patients overcome substance abuse.',
+        bio:
+            'Specialized in addiction treatment with 15 years of experience in helping patients overcome substance abuse.',
         rating: 4.8,
         reviewCount: 124,
         languages: ['English', 'Malayalam'],
@@ -126,7 +132,8 @@ class AppointmentsProvider extends ChangeNotifier {
         name: 'Dr. Rajesh Kumar',
         specialty: 'Clinical Psychologist',
         qualifications: ['PsyD', 'Certified Addiction Counselor'],
-        bio: 'Expert in cognitive behavioral therapy and addiction counseling with a focus on holistic recovery.',
+        bio:
+            'Expert in cognitive behavioral therapy and addiction counseling with a focus on holistic recovery.',
         rating: 4.9,
         reviewCount: 98,
         languages: ['English', 'Malayalam', 'Hindi'],
@@ -138,28 +145,7 @@ class AppointmentsProvider extends ChangeNotifier {
   }
 
   List<Appointment> _getMockAppointments() {
-    return [
-      Appointment(
-        id: '1',
-        doctorId: '1',
-        doctorName: 'Dr. Sarah Johnson',
-        doctorSpecialty: 'Addiction Psychiatrist',
-        doctorPhotoUrl: 'https://example.com/doctor1.jpg',
-        dateTime: DateTime.now().add(const Duration(days: 2)),
-        status: 'upcoming',
-        consultationType: 'video',
-        meetingLink: 'https://meet.google.com/abc-defg-hij',
-      ),
-      Appointment(
-        id: '2',
-        doctorId: '2',
-        doctorName: 'Dr. Rajesh Kumar',
-        doctorSpecialty: 'Clinical Psychologist',
-        doctorPhotoUrl: 'https://example.com/doctor2.jpg',
-        dateTime: DateTime.now().subtract(const Duration(days: 5)),
-        status: 'completed',
-        consultationType: 'in-person',
-      ),
-    ];
+    // Start with no appointments
+    return [];
   }
-} 
+}

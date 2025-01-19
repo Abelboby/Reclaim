@@ -4,6 +4,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/appointments_provider.dart';
 import '../../../core/models/appointment.dart';
 import '../settings/settings_screen.dart';
+import '../support/professional_consultation_screen.dart';
 import 'package:provider/provider.dart';
 import '../../../core/animations/app_animations.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -323,7 +324,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/support');
+                            Navigator.push(
+                              context,
+                              AppAnimations.fadeScale(
+                                child: const ProfessionalConsultationScreen(),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.oceanBlue,

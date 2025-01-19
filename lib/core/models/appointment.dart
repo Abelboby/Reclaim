@@ -52,4 +52,4 @@ class Appointment {
       notes: json['notes'],
     );
   }
-} 
+}

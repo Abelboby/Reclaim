@@ -10,10 +10,13 @@ class ProfessionalConsultationScreen extends StatefulWidget {
   const ProfessionalConsultationScreen({super.key});
 
   @override
-  State<ProfessionalConsultationScreen> createState() => _ProfessionalConsultationScreenState();
+  State<ProfessionalConsultationScreen> createState() =>
+      _ProfessionalConsultationScreenState();
 }
 
-class _ProfessionalConsultationScreenState extends State<ProfessionalConsultationScreen> with SingleTickerProviderStateMixin {
+class _ProfessionalConsultationScreenState
+    extends State<ProfessionalConsultationScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final List<Animation<double>> _animations;
   DateTime _selectedDay = DateTime.now();
@@ -107,8 +110,14 @@ class _ProfessionalConsultationScreenState extends State<ProfessionalConsultatio
                 }
 
                 final professionals = provider.professionals;
-                final specialties = ['All', ...professionals.map((p) => p.specialty).toSet()];
-                final languages = ['All', ...professionals.expand((p) => p.languages).toSet()];
+                final specialties = [
+                  'All',
+                  ...professionals.map((p) => p.specialty).toSet()
+                ];
+                final languages = [
+                  'All',
+                  ...professionals.expand((p) => p.languages).toSet()
+                ];
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,10 +173,18 @@ class _ProfessionalConsultationScreenState extends State<ProfessionalConsultatio
     void Function(String?) onChanged,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: DropdownButton<String>(
         value: selectedValue,
@@ -182,15 +199,71 @@ class _ProfessionalConsultationScreenState extends State<ProfessionalConsultatio
         style: const TextStyle(
           color: Colors.black87,
           fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        icon: Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: Colors.grey.shade600,
         ),
       ),
     );
   }
 
   Widget _buildProfessionalsList(List<MedicalProfessional> professionals) {
-    final filteredProfessionals = professionals.where((p) {
-      final matchesSpecialty = _selectedSpecialty == 'All' || p.specialty == _selectedSpecialty;
-      final matchesLanguage = _selectedLanguage == 'All' || p.languages.contains(_selectedLanguage);
+    // For demo purposes, create a fixed list of professionals
+    final fixedProfessionals = [
+      MedicalProfessional(
+        id: '1',
+        name: 'Dr. Sarah Johnson',
+        specialty: 'Addiction Psychiatrist',
+        photoUrl:
+            'https://ui-avatars.com/api/?name=Sarah+Johnson&background=0D8ABC&color=fff',
+        qualifications: ['MD', 'Board Certified Psychiatrist'],
+        rating: 4.9,
+        reviewCount: 127,
+        yearsOfExperience: 12,
+        languages: ['English', 'Spanish'],
+        bio:
+            'Specialized in addiction recovery and mental health with a holistic approach to treatment.',
+        availableConsultationTypes: ['video', 'in-person'],
+      ),
+      MedicalProfessional(
+        id: '2',
+        name: 'Dr. Michael Chen',
+        specialty: 'Recovery Specialist',
+        photoUrl:
+            'https://ui-avatars.com/api/?name=Michael+Chen&background=0D8ABC&color=fff',
+        qualifications: ['MD', 'Board Certified Psychiatrist'],
+        rating: 4.8,
+        reviewCount: 98,
+        yearsOfExperience: 8,
+        languages: ['English', 'Mandarin'],
+        bio:
+            'Expert in substance abuse treatment and behavioral therapy with a focus on personalized care plans.',
+        availableConsultationTypes: ['video'],
+      ),
+      MedicalProfessional(
+        id: '3',
+        name: 'Dr. Emily Rodriguez',
+        specialty: 'Clinical Psychologist',
+        photoUrl:
+            'https://ui-avatars.com/api/?name=Emily+Rodriguez&background=0D8ABC&color=fff',
+        qualifications: ['MD', 'Board Certified Psychiatrist'],
+        rating: 4.9,
+        reviewCount: 156,
+        yearsOfExperience: 15,
+        languages: ['English', 'Spanish', 'Portuguese'],
+        bio:
+            'Specializing in trauma-informed care and cognitive behavioral therapy for addiction recovery.',
+        availableConsultationTypes: ['video', 'in-person'],
+      ),
+    ];
+
+    final filteredProfessionals = fixedProfessionals.where((p) {
+      final matchesSpecialty =
+          _selectedSpecialty == 'All' || p.specialty == _selectedSpecialty;
+      final matchesLanguage =
+          _selectedLanguage == 'All' || p.languages.contains(_selectedLanguage);
       return matchesSpecialty && matchesLanguage;
     }).toList();
 
@@ -208,21 +281,60 @@ class _ProfessionalConsultationScreenState extends State<ProfessionalConsultatio
   Widget _buildProfessionalCard(MedicalProfessional professional) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: InkWell(
         onTap: () => _showBookingDialog(professional),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                Colors.grey.shade50,
+              ],
+            ),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: NetworkImage(professional.photoUrl),
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: Image.network(
+                        professional.photoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: AppColors.oceanBlue,
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 40,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -232,25 +344,57 @@ class _ProfessionalConsultationScreenState extends State<ProfessionalConsultatio
                         Text(
                           professional.name,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
                           professional.specialty,
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
+                          style: const TextStyle(
+                            color: AppColors.oceanBlue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                        const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.star, size: 16, color: Colors.amber.shade600),
-                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.star_rounded,
+                                    size: 16,
+                                    color: Colors.amber.shade800,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    professional.rating.toString(),
+                                    style: TextStyle(
+                                      color: Colors.amber.shade900,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
                             Text(
-                              '${professional.rating} (${professional.reviewCount} reviews)',
+                              '(${professional.reviewCount} reviews)',
                               style: TextStyle(
                                 color: Colors.grey.shade600,
-                                fontSize: 12,
+                                fontSize: 13,
                               ),
                             ),
                           ],
@@ -261,35 +405,66 @@ class _ProfessionalConsultationScreenState extends State<ProfessionalConsultatio
                 ],
               ),
               const SizedBox(height: 16),
-              Text(
-                professional.bio,
-                style: const TextStyle(fontSize: 14),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  ...professional.qualifications.map((q) => _buildChip(q)),
-                  ...professional.languages.map((l) => _buildChip(l, isLanguage: true)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: ElevatedButton(
-                  onPressed: () => _showBookingDialog(professional),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.oceanBlue,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                  ),
-                  child: const Text('Book Free Consultation'),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
                 ),
+                child: Text(
+                  professional.bio,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade700,
+                    height: 1.5,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInfoRow(
+                          Icons.work_outline,
+                          '${professional.yearsOfExperience} years experience',
+                        ),
+                        const SizedBox(height: 8),
+                        _buildInfoRow(
+                          Icons.language,
+                          professional.languages.join(', '),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _showBookingDialog(professional),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.oceanBlue,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Book Now',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -298,20 +473,27 @@ class _ProfessionalConsultationScreenState extends State<ProfessionalConsultatio
     );
   }
 
-  Widget _buildChip(String label, {bool isLanguage = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isLanguage ? AppColors.turquoise.withOpacity(0.1) : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: isLanguage ? AppColors.turquoise : Colors.grey.shade800,
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: Colors.grey.shade600,
         ),
-      ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade700,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 
@@ -351,7 +533,8 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
     super.initState();
     _selectedDay = widget.selectedDay;
     if (widget.professional.availableConsultationTypes.isNotEmpty) {
-      _selectedConsultationType = widget.professional.availableConsultationTypes.first;
+      _selectedConsultationType =
+          widget.professional.availableConsultationTypes.first;
     }
   }
 
@@ -409,7 +592,15 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
             children: [
               CircleAvatar(
                 radius: 24,
+                backgroundColor: AppColors.oceanBlue,
                 backgroundImage: NetworkImage(widget.professional.photoUrl),
+                onBackgroundImageError: (exception, stackTrace) {
+                  setState(() {});
+                },
+                child: const Icon(
+                  Icons.person,
+                  color: Colors.white,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -507,7 +698,7 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
 
   Widget _buildTimeSlots() {
     final slots = widget.professional.getAvailableSlots(_selectedDay);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -603,4 +794,4 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
       ),
     );
   }
-} 
+}

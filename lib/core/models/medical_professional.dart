@@ -62,7 +62,7 @@ class MedicalProfessional {
     final slots = <TimeSlot>[];
     final startHour = 9; // 9 AM
     final endHour = 17; // 5 PM
-    
+
     for (int hour = startHour; hour < endHour; hour++) {
       slots.add(
         TimeSlot(
@@ -72,7 +72,7 @@ class MedicalProfessional {
         ),
       );
     }
-    
+
     return slots;
   }
 
@@ -104,7 +104,8 @@ class MedicalProfessional {
       languages: List<String>.from(json['languages']),
       photoUrl: json['photoUrl'],
       yearsOfExperience: json['yearsOfExperience'],
-      availableConsultationTypes: List<String>.from(json['availableConsultationTypes']),
+      availableConsultationTypes:
+          List<String>.from(json['availableConsultationTypes']),
     );
   }
-} 
+}
