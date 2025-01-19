@@ -59,6 +59,26 @@ Reclaim is a comprehensive mobile application designed to support individuals on
 - **Chat Support**: Get immediate assistance through our chat feature
 - **Resource Center**: Access to educational materials and recovery resources
 - **Appointment Management**: Schedule and manage appointments with healthcare providers
+- **Blockchain-Based Anonymous Reports**: Submit completely anonymous reports using Ethereum's Sepolia testnet, ensuring privacy and immutability
+  - MetaMask integration for secure blockchain transactions
+  - Reports stored on Sepolia testnet for transparency
+  - Zero-knowledge proof implementation for anonymity
+  - Decentralized storage ensuring report integrity
+
+## 🔗 Blockchain Integration
+
+### Anonymous Reporting System
+The anonymous reporting feature is built on Ethereum's Sepolia testnet, providing:
+- **Complete Anonymity**: Users can submit reports without revealing their identity
+- **Immutable Records**: All reports are permanently stored on the blockchain
+- **Transparent Verification**: Reports can be verified while maintaining reporter privacy
+- **MetaMask Integration**: Easy-to-use blockchain interaction through MetaMask wallet
+
+### Technical Details
+- **Network**: Ethereum Sepolia Testnet
+- **Smart Contract Address**: `0x...` (to be updated)
+- **Required**: MetaMask wallet with Sepolia ETH for gas fees
+- **Gas Optimization**: Implemented efficient smart contracts to minimize transaction costs
 
 ## 🚀 Getting Started
 
