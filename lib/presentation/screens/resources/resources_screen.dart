@@ -4,6 +4,7 @@ import 'news_screen.dart';
 import 'mindfulness_screen.dart';
 import 'support_groups_screen.dart';
 import '../../../core/animations/app_animations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ResourcesScreen extends StatefulWidget {
   const ResourcesScreen({super.key});
@@ -349,29 +350,52 @@ class _ResourcesScreenState extends State<ResourcesScreen>
 
   Widget _buildEmergencyDialog(BuildContext context) {
     return AlertDialog(
-      title: Row(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Column(
         children: [
-          Icon(Icons.emergency, color: Colors.red.shade600),
-          const SizedBox(width: 8),
-          const Text('Emergency Support'),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.emergency, color: Colors.red.shade600, size: 32),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Emergency Support',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Immediate help is available 24/7',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
         ],
       ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       content: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildEmergencyContact(
             'National Crisis Hotline',
             '1-800-662-4357',
             Icons.phone,
           ),
-          const Divider(),
+          const SizedBox(height: 16),
           _buildEmergencyContact(
             'Suicide Prevention Lifeline',
             '988',
             Icons.phone,
           ),
-          const Divider(),
+          const SizedBox(height: 16),
           _buildEmergencyContact(
             'Local Emergency',
             '911',
@@ -382,41 +406,83 @@ class _ResourcesScreenState extends State<ResourcesScreen>
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Close'),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: Text(
+            'Close',
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildEmergencyContact(String title, String contact, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: Colors.red.shade600),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  contact,
-                  style: TextStyle(
-                    color: Colors.blue.shade700,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ],
-            ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async {
+          final Uri phoneUri = Uri(
+            scheme: 'tel',
+            path: contact.replaceAll('-', ''),
+          );
+          if (await canLaunchUrl(phoneUri)) {
+            await launchUrl(phoneUri);
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade200),
+            borderRadius: BorderRadius.circular(12),
           ),
-        ],
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 20, color: Colors.red.shade600),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      contact,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey.shade400,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
