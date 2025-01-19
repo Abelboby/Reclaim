@@ -56,18 +56,27 @@ class _HomeScreenState extends State<HomeScreen>
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 120,
+            expandedHeight: 180,
             floating: false,
             pinned: true,
             stretch: true,
+            backgroundColor: Colors.transparent,
             flexibleSpace: FlexibleSpaceBar(
+              titlePadding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               title: Consumer<AuthProvider>(
                 builder: (context, authProvider, _) {
                   final userName =
                       authProvider.user?.displayName?.split(' ')[0] ?? 'User';
                   return Text(
-                    'Welcome back, $userName',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    'Welcome back,\n$userName',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      height: 1.3,
+                    ),
                   );
                 },
               ),
@@ -82,12 +91,29 @@ class _HomeScreenState extends State<HomeScreen>
                     ],
                   ),
                 ),
-                child: AppAnimations.shimmer(
-                  child: Icon(
-                    Icons.waves,
-                    size: 100,
-                    color: Colors.white.withOpacity(0.2),
-                  ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    AppAnimations.shimmer(
+                      child: Icon(
+                        Icons.waves,
+                        size: 120,
+                        color: Colors.white.withOpacity(0.2),
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            AppColors.oceanBlue.withOpacity(0.8),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               stretchModes: const [
