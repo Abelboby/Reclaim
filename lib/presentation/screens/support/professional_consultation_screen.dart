@@ -60,106 +60,169 @@ class _ProfessionalConsultationScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 120,
-            floating: false,
-            pinned: true,
-            stretch: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Professional Consultation',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                    colors: [
-                      AppColors.oceanBlue,
-                      AppColors.turquoise,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AppColors.oceanBlue.withOpacity(0.05),
+              Colors.white,
+            ],
+          ),
+        ),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 180,
+              floating: false,
+              pinned: true,
+              stretch: true,
+              backgroundColor: Colors.transparent,
+              flexibleSpace: FlexibleSpaceBar(
+                title: const Text(
+                  'Professional Consultation',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 22,
+                  ),
+                ),
+                background: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                      colors: [
+                        AppColors.oceanBlue,
+                        AppColors.turquoise,
+                      ],
+                    ),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      AppAnimations.shimmer(
+                        child: Icon(
+                          Icons.medical_services,
+                          size: 120,
+                          color: Colors.white.withOpacity(0.2),
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              AppColors.oceanBlue.withOpacity(0.8),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                child: AppAnimations.shimmer(
-                  child: Icon(
-                    Icons.medical_services,
-                    size: 80,
-                    color: Colors.white.withOpacity(0.2),
-                  ),
-                ),
+                stretchModes: const [
+                  StretchMode.zoomBackground,
+                  StretchMode.blurBackground,
+                ],
               ),
-              stretchModes: const [
-                StretchMode.zoomBackground,
-                StretchMode.blurBackground,
-              ],
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Consumer<AppointmentsProvider>(
-              builder: (context, provider, _) {
-                if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+            SliverToBoxAdapter(
+              child: Consumer<AppointmentsProvider>(
+                builder: (context, provider, _) {
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                if (provider.error != null) {
-                  return Center(child: Text(provider.error!));
-                }
+                  if (provider.error != null) {
+                    return Center(child: Text(provider.error!));
+                  }
 
-                final professionals = provider.professionals;
-                final specialties = [
-                  'All',
-                  ...professionals.map((p) => p.specialty).toSet()
-                ];
-                final languages = [
-                  'All',
-                  ...professionals.expand((p) => p.languages).toSet()
-                ];
+                  final professionals = provider.professionals;
+                  final specialties = [
+                    'All',
+                    ...professionals.map((p) => p.specialty).toSet()
+                  ];
+                  final languages = [
+                    'All',
+                    ...professionals.expand((p) => p.languages).toSet()
+                  ];
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-                    AppAnimations.slideUp(
-                      animation: _animations[0],
-                      child: _buildFilters(specialties, languages),
-                    ),
-                    const SizedBox(height: 24),
-                    AppAnimations.slideUp(
-                      animation: _animations[1],
-                      child: _buildProfessionalsList(professionals),
-                    ),
-                  ],
-                );
-              },
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 24),
+                      AppAnimations.slideUp(
+                        animation: _animations[0],
+                        child: _buildFilters(specialties, languages),
+                      ),
+                      const SizedBox(height: 24),
+                      AppAnimations.slideUp(
+                        animation: _animations[1],
+                        child: _buildProfessionalsList(professionals),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildFilters(List<String> specialties, List<String> languages) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          _buildDropdownFilter(
-            'Specialty',
-            specialties,
-            _selectedSpecialty,
-            (value) => setState(() => _selectedSpecialty = value!),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          const SizedBox(width: 16),
-          _buildDropdownFilter(
-            'Language',
-            languages,
-            _selectedLanguage,
-            (value) => setState(() => _selectedLanguage = value!),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Filter By',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.oceanBlue,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdownFilter(
+                  'Specialty',
+                  specialties,
+                  _selectedSpecialty,
+                  (value) => setState(() => _selectedSpecialty = value!),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildDropdownFilter(
+                  'Language',
+                  languages,
+                  _selectedLanguage,
+                  (value) => setState(() => _selectedLanguage = value!),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -173,38 +236,45 @@ class _ProfessionalConsultationScreenState
     void Function(String?) onChanged,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+        border: Border.all(color: AppColors.oceanBlue.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          DropdownButton<String>(
+            value: selectedValue,
+            items: items.map((item) {
+              return DropdownMenuItem(
+                value: item,
+                child: Text(item),
+              );
+            }).toList(),
+            onChanged: onChanged,
+            underline: const SizedBox(),
+            isExpanded: true,
+            icon: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: AppColors.oceanBlue,
+            ),
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
-      ),
-      child: DropdownButton<String>(
-        value: selectedValue,
-        items: items.map((item) {
-          return DropdownMenuItem(
-            value: item,
-            child: Text(item),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        underline: const SizedBox(),
-        style: const TextStyle(
-          color: Colors.black87,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
-        icon: Icon(
-          Icons.keyboard_arrow_down_rounded,
-          color: Colors.grey.shade600,
-        ),
       ),
     );
   }
@@ -279,194 +349,249 @@ class _ProfessionalConsultationScreenState
   }
 
   Widget _buildProfessionalCard(MedicalProfessional professional) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: InkWell(
-        onTap: () => _showBookingDialog(professional),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white,
-                Colors.grey.shade50,
-              ],
-            ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.grey.shade50,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.oceanBlue.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: () => _showBookingDialog(professional),
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.oceanBlue.withOpacity(0.2),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Image.network(
+                          professional.photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    AppColors.oceanBlue,
+                                    AppColors.turquoise,
+                                  ],
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 50,
+                              ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: Image.network(
-                        professional.photoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: AppColors.oceanBlue,
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 40,
-                            ),
-                          );
-                        },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          professional.name,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.5,
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            professional.name,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          professional.specialty,
-                          style: const TextStyle(
-                            color: AppColors.oceanBlue,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.oceanBlue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              professional.specialty,
+                              style: const TextStyle(
+                                color: AppColors.oceanBlue,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.amber.shade100,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.star_rounded,
-                                    size: 16,
-                                    color: Colors.amber.shade800,
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.amber.shade200,
+                                    width: 1,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    professional.rating.toString(),
-                                    style: TextStyle(
-                                      color: Colors.amber.shade900,
-                                      fontWeight: FontWeight.bold,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.star_rounded,
+                                      size: 16,
+                                      color: Colors.amber.shade700,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      professional.rating.toString(),
+                                      style: TextStyle(
+                                        color: Colors.amber.shade900,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '(${professional.reviewCount} reviews)',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 13,
+                              const SizedBox(width: 8),
+                              Text(
+                                '(${professional.reviewCount} reviews)',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 13,
+                                ),
                               ),
-                            ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.oceanBlue.withOpacity(0.1),
+                    ),
+                  ),
+                  child: Text(
+                    professional.bio,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildInfoRow(
+                            Icons.work_outline,
+                            '${professional.yearsOfExperience} years experience',
+                          ),
+                          const SizedBox(height: 8),
+                          _buildInfoRow(
+                            Icons.language,
+                            professional.languages.join(', '),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.oceanBlue,
+                            AppColors.turquoise,
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Text(
-                  professional.bio,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade700,
-                    height: 1.5,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInfoRow(
-                          Icons.work_outline,
-                          '${professional.yearsOfExperience} years experience',
-                        ),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(
-                          Icons.language,
-                          professional.languages.join(', '),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _showBookingDialog(professional),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.oceanBlue,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.oceanBlue.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () => _showBookingDialog(professional),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Book Now',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Book Now',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -474,26 +599,37 @@ class _ProfessionalConsultationScreenState
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.grey.shade600,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade700,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppColors.oceanBlue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            child: Icon(
+              icon,
+              size: 16,
+              color: AppColors.oceanBlue,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -502,9 +638,16 @@ class _ProfessionalConsultationScreenState
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _BookingBottomSheet(
-        professional: professional,
-        selectedDay: _selectedDay,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.85,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: _BookingBottomSheet(
+          professional: professional,
+          selectedDay: _selectedDay,
+        ),
       ),
     );
   }
@@ -541,29 +684,48 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildHeader(),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildCalendar(),
-                  const SizedBox(height: 24),
-                  _buildConsultationTypeSelector(),
-                  const SizedBox(height: 24),
-                  _buildTimeSlots(),
-                  const SizedBox(height: 24),
-                  _buildBookButton(),
-                ],
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white,
+                    AppColors.oceanBlue.withOpacity(0.05),
+                  ],
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCalendar(),
+                    const SizedBox(height: 24),
+                    _buildConsultationTypeSelector(),
+                    const SizedBox(height: 24),
+                    _buildTimeSlots(),
+                    const SizedBox(height: 32),
+                    _buildBookButton(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),
@@ -574,32 +736,68 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.shade200,
-            blurRadius: 4,
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         children: [
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
           Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.oceanBlue,
-                backgroundImage: NetworkImage(widget.professional.photoUrl),
-                onBackgroundImageError: (exception, stackTrace) {
-                  setState(() {});
-                },
-                child: const Icon(
-                  Icons.person,
-                  color: Colors.white,
+              Hero(
+                tag: 'doctor_${widget.professional.id}',
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppColors.oceanBlue,
+                        AppColors.turquoise,
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.oceanBlue.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      widget.professional.photoUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: 30,
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
@@ -610,14 +808,28 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
                     Text(
                       widget.professional.name,
                       style: const TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
                     ),
-                    Text(
-                      widget.professional.specialty,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.oceanBlue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        widget.professional.specialty,
+                        style: const TextStyle(
+                          color: AppColors.oceanBlue,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
@@ -626,6 +838,10 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
               IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.grey.shade100,
+                  foregroundColor: Colors.grey.shade700,
+                ),
               ),
             ],
           ),
@@ -666,31 +882,101 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
         const Text(
           'Consultation Type',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          children: widget.professional.availableConsultationTypes.map((type) {
-            final isSelected = type == _selectedConsultationType;
-            return ChoiceChip(
-              label: Text(
-                type == 'video' ? 'Video Call' : 'In-Person',
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey.shade800,
-                ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.oceanBlue.withOpacity(0.1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              selected: isSelected,
-              selectedColor: AppColors.oceanBlue,
-              onSelected: (selected) {
-                if (selected) {
-                  setState(() => _selectedConsultationType = type);
-                }
-              },
-            );
-          }).toList(),
+            ],
+          ),
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children:
+                widget.professional.availableConsultationTypes.map((type) {
+              final isSelected = type == _selectedConsultationType;
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => setState(() => _selectedConsultationType = type),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: isSelected
+                          ? const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                AppColors.oceanBlue,
+                                AppColors.turquoise,
+                              ],
+                            )
+                          : null,
+                      color: isSelected ? null : Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? Colors.transparent
+                            : AppColors.oceanBlue.withOpacity(0.2),
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: AppColors.oceanBlue.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          type == 'video'
+                              ? Icons.videocam_rounded
+                              : Icons.person_rounded,
+                          color:
+                              isSelected ? Colors.white : AppColors.oceanBlue,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          type == 'video' ? 'Video Call' : 'In-Person',
+                          style: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.shade800,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ],
     );
@@ -705,91 +991,242 @@ class _BookingBottomSheetState extends State<_BookingBottomSheet> {
         const Text(
           'Available Time Slots',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 12),
-        if (slots.isEmpty)
-          Text(
-            'No time slots available for this date',
-            style: TextStyle(color: Colors.grey.shade600),
-          )
-        else
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: slots.map((slot) {
-              final isSelected = _selectedTimeSlot == slot;
-              return ChoiceChip(
-                label: Text(
-                  '${slot.startTime.hour}:${slot.startTime.minute.toString().padLeft(2, '0')}',
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.grey.shade800,
-                  ),
-                ),
-                selected: isSelected,
-                selectedColor: AppColors.oceanBlue,
-                onSelected: slot.isBooked
-                    ? null
-                    : (selected) {
-                        if (selected) {
-                          setState(() => _selectedTimeSlot = slot);
-                        }
-                      },
-              );
-            }).toList(),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.oceanBlue.withOpacity(0.1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
+          child: slots.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.event_busy_rounded,
+                          size: 48,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No time slots available for this date',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Wrap(
+                  spacing: 8,
+                  runSpacing: 12,
+                  children: slots.map((slot) {
+                    final isSelected = _selectedTimeSlot == slot;
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: slot.isBooked
+                            ? null
+                            : () => setState(() => _selectedTimeSlot = slot),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            gradient: isSelected
+                                ? const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      AppColors.oceanBlue,
+                                      AppColors.turquoise,
+                                    ],
+                                  )
+                                : null,
+                            color: isSelected
+                                ? null
+                                : slot.isBooked
+                                    ? Colors.grey.shade100
+                                    : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.transparent
+                                  : slot.isBooked
+                                      ? Colors.grey.shade300
+                                      : AppColors.oceanBlue.withOpacity(0.2),
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color:
+                                          AppColors.oceanBlue.withOpacity(0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Text(
+                            '${slot.startTime.hour}:${slot.startTime.minute.toString().padLeft(2, '0')}',
+                            style: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : slot.isBooked
+                                      ? Colors.grey.shade500
+                                      : Colors.grey.shade800,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+        ),
       ],
     );
   }
 
   Widget _buildBookButton() {
-    return ElevatedButton(
-      onPressed: _selectedTimeSlot == null || _selectedConsultationType == null
-          ? null
-          : () {
-              context.read<AppointmentsProvider>().bookAppointment(
-                    widget.professional.id,
-                    _selectedTimeSlot!.startTime,
-                    _selectedConsultationType!,
-                  );
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Appointment booked successfully!',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      if (_selectedConsultationType == 'video')
-                        const Text(
-                          'A Google Meet link has been generated and will be available in your profile.',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                    ],
-                  ),
-                  backgroundColor: Colors.green,
-                  duration: const Duration(seconds: 5),
+    final bool canBook =
+        _selectedTimeSlot != null && _selectedConsultationType != null;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: canBook
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.oceanBlue,
+                  AppColors.turquoise,
+                ],
+              )
+            : null,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: canBook
+            ? [
+                BoxShadow(
+                  color: AppColors.oceanBlue.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-              );
-            },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.oceanBlue,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+              ]
+            : null,
       ),
-      child: const Text(
-        'Confirm Booking',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
+      child: ElevatedButton(
+        onPressed: canBook
+            ? () async {
+                try {
+                  await context.read<AppointmentsProvider>().bookAppointment(
+                        widget.professional.id,
+                        _selectedTimeSlot!.startTime,
+                        _selectedConsultationType!,
+                      );
+
+                  if (!mounted) return;
+
+                  // Debug print appointments after booking
+                  context.read<AppointmentsProvider>().debugPrintAppointments();
+
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(
+                                  Icons.check_circle_outline,
+                                  color: Colors.white,
+                                ),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Appointment Booked!',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_selectedConsultationType == 'video') ...[
+                              const SizedBox(height: 8),
+                              const Text(
+                                'A Google Meet link has been generated and will be available in your profile.',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      backgroundColor: Colors.green.shade600,
+                      duration: const Duration(seconds: 5),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                } catch (e) {
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content:
+                          Text('Error booking appointment: ${e.toString()}'),
+                      backgroundColor: Colors.red.shade600,
+                      behavior: SnackBarBehavior.floating,
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              }
+            : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: Colors.grey.shade200,
+          disabledForegroundColor: Colors.grey.shade500,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: const Text(
+          'Confirm Booking',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );

@@ -7,6 +7,7 @@ class AppointmentsProvider extends ChangeNotifier {
   String? _error;
   List<Appointment> _appointments = [];
   List<MedicalProfessional> _professionals = [];
+  bool _isInitialized = false;
 
   // Getters
   bool get isLoading => _isLoading;
@@ -28,6 +29,8 @@ class AppointmentsProvider extends ChangeNotifier {
 
   // Initialize with mock data for now
   Future<void> initialize() async {
+    if (_isInitialized) return; // Skip if already initialized
+
     try {
       _isLoading = true;
       notifyListeners();
@@ -37,6 +40,7 @@ class AppointmentsProvider extends ChangeNotifier {
       _professionals = _getMockProfessionals();
       _appointments = _getMockAppointments();
 
+      _isInitialized = true;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -79,13 +83,14 @@ class AppointmentsProvider extends ChangeNotifier {
         meetingLink: meetingLink,
       );
 
-      _appointments.add(appointment);
+      _appointments = [..._appointments, appointment];
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _isLoading = false;
       _error = e.toString();
       notifyListeners();
+      rethrow; // Rethrow to handle error in UI
     }
   }
 
@@ -97,10 +102,8 @@ class AppointmentsProvider extends ChangeNotifier {
       // TODO: Replace with actual API call
       await Future.delayed(const Duration(seconds: 1));
 
-      final index = _appointments.indexWhere((apt) => apt.id == appointmentId);
-      if (index != -1) {
-        _appointments.removeAt(index);
-      }
+      _appointments =
+          _appointments.where((apt) => apt.id != appointmentId).toList();
 
       _isLoading = false;
       notifyListeners();
@@ -108,6 +111,7 @@ class AppointmentsProvider extends ChangeNotifier {
       _isLoading = false;
       _error = e.toString();
       notifyListeners();
+      rethrow; // Rethrow to handle error in UI
     }
   }
 
@@ -147,5 +151,13 @@ class AppointmentsProvider extends ChangeNotifier {
   List<Appointment> _getMockAppointments() {
     // Start with no appointments
     return [];
+  }
+
+  // Debug method to check appointments
+  void debugPrintAppointments() {
+    print('Current Appointments: ${_appointments.length}');
+    for (var apt in _appointments) {
+      print('Appointment: ${apt.doctorName} at ${apt.dateTime}');
+    }
   }
 }

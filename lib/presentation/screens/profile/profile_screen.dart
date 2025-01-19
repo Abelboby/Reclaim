@@ -42,6 +42,11 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
 
     _controller.forward();
+
+    // Initialize the appointments provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppointmentsProvider>().initialize();
+    });
   }
 
   @override
@@ -281,8 +286,16 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Consumer<AppointmentsProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: CircularProgressIndicator(),
+            ),
+          );
         }
+
+        // Debug print appointments when building
+        provider.debugPrintAppointments();
 
         final upcomingAppointments = provider.upcomingAppointments;
 
@@ -329,7 +342,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                               AppAnimations.fadeScale(
                                 child: const ProfessionalConsultationScreen(),
                               ),
-                            );
+                            ).then((_) {
+                              // Refresh appointments when returning from consultation screen
+                              provider.debugPrintAppointments();
+                              setState(() {});
+                            });
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.oceanBlue,

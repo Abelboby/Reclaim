@@ -49,32 +49,9 @@ class _HomeScreenState extends State<HomeScreen>
     super.dispose();
   }
 
-  Future<void> _launchMetaMask() async {
-    final url =
-        'https://metamask.app.link/dapp/https://kichuman28.github.io/ipfs/';
-    try {
-      final uri = Uri.parse(url);
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              'Could not launch MetaMask. Please make sure it is installed.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: _launchMetaMask,
-        backgroundColor: AppColors.oceanBlue,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
