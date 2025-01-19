@@ -39,10 +39,11 @@ class ReportScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           'Report an Incident',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: AppColors.oceanBlue,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: AppColors.oceanBlue,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                         ),
                       ],
                     ),
@@ -75,7 +76,8 @@ class ReportScreen extends StatelessWidget {
                       maxLines: 5,
                       decoration: InputDecoration(
                         labelText: 'Description',
-                        hintText: 'Provide detailed information about the incident',
+                        hintText:
+                            'Provide detailed information about the incident',
                         alignLabelWithHint: true,
                         prefixIcon: const Padding(
                           padding: EdgeInsets.only(bottom: 80),
@@ -140,4 +142,4 @@ class ReportScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}
